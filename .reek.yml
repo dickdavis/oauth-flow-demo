@@ -25,3 +25,8 @@ directories:
   "app/models":
     InstanceVariableAssumption:
       enabled: false
+  "db/migrate":
+    FeatureEnvy:
+      enabled: false
+    TooManyStatements:
+      enabled: false
