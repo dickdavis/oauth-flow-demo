@@ -1,0 +1,40 @@
+<%= form_with(model: user, class: "contents") do |form| %>
+  <div class="my-3">
+    <%= form.label :first_name, class: 'form-label' %>
+    <%= form.text_field :first_name, class: 'text-input-field' %>
+    <% user.errors.select{|error| error.attribute == :first_name }.each do |error| %>
+      <p><%= tag.small error.full_message.humanize, class: 'field_with_errors' %></p>
+    <% end %>
+  </div>
+  <div class="my-3">
+    <%= form.label :last_name, class: 'form-label' %>
+    <%= form.text_field :last_name, class: 'text-input-field' %>
+    <% user.errors.select{|error| error.attribute == :last_name }.each do |error| %>
+      <p><%= tag.small error.full_message.humanize, class: 'field_with_errors' %></p>
+    <% end %>
+  </div>
+  <div class="my-3">
+    <%= form.label :email, class: 'form-label' %>
+    <%= form.email_field :email, class: 'text-input-field' %>
+    <% user.errors.select{|error| error.attribute == :email }.each do |error| %>
+      <p><%= tag.small error.full_message.humanize, class: 'field_with_errors' %></p>
+    <% end %>
+  </div>
+  <div class="my-3">
+    <%= form.label :password, class: 'form-label' %>
+    <%= form.password_field :password, class: 'text-input-field' %>
+    <% user.errors.select{|error| error.attribute == :password }.each do |error| %>
+      <p><%= tag.small error.full_message.humanize, class: 'field_with_errors' %></p>
+    <% end %>
+  </div>
+  <div class="my-3">
+    <%= form.label :password_confirmation, class: 'form-label' %>
+    <%= form.password_field :password_confirmation, class: 'text-input-field' %>
+    <% user.errors.select{|error| error.attribute == :password_confirmation }.each do |error| %>
+      <p><%= tag.small error.full_message.humanize, class: 'field_with_errors' %></p>
+    <% end %>
+  </div>
+  <div class="text-center">
+    <%= form.submit t('.submit'), class: 'btn-primary' %>
+  </div>
+<% end %>

@@ -1,13 +1,37 @@
 @tailwind base;
-@tailwind components;
 @tailwind utilities;
-
-/*
+@tailwind components;
 
 @layer components {
   .btn-primary {
-    @apply py-2 px-4 bg-blue-200;
+    @apply appearance-none cursor-pointer inline-block font-semibold text-center align-middle no-underline select-none transition-colors border-2 border-solid rounded-md focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 bg-blue-500 text-white border-blue-500 hover:bg-blue-700 px-3 py-2;
+  }
+
+  .card {
+    @apply p-2 md:p-4 mx-auto my-4 bg-white dark:bg-gray-700 rounded-xl shadow-md items-center w-full max-w-2xl;
+  }
+
+  .form-label {
+    @apply text-gray-900 dark:text-white font-medium;
+  }
+
+  .text-input-field {
+    @apply block shadow rounded-md border-none text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-600 outline-none px-3 py-3 mt-1 w-full;
+  }
+
+  div.field_with_errors {
+    display: flex;
+  }
+
+  .field_with_errors label {
+    color: rgba(239, 68, 68, 1);
+  }
+
+  .field_with_errors input, .field_with_errors select, .field_with_errors select option {
+    @apply text-gray-800 dark:text-white border-red-500 hover:border-red-500 focus:border-red-500;
+   }
+
+  small.field_with_errors {
+    color: rgba(239, 68, 68, 1);
   }
 }
-
-*/
