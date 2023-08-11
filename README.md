@@ -14,10 +14,10 @@ sequenceDiagram
 autonumber
 
 actor Client
-participant Authorization Service
 participant Authentication Service
+participant Authorization Service
+participant Data Layer
 participant Token Issue Service
-
 
 Client-->Client: Generates code verifier and code challenge
 Client-->>Authorization Service: Calls the authorization endpoint with code challenge
@@ -29,12 +29,14 @@ Authentication Service-->>Authorization Service: Redirects to callback endpoint 
 Note left of Authentication Service: GET /callback
 Authorization Service-->Authorization Service: Decodes state token
 Authorization Service-->Authorization Service: Generates auth code
-Authorization Service-->Authorization Service: Stores auth code and code challenge
+Authorization Service-->>Data Layer: Stores auth code and code challenge
 Authorization Service-->>Client: Returns auth code to client
 Client-->>Token Issue Service: Provides auth code and code verifier
 Note right of Client: POST /token
-Token Issue Service-->Token Issue Service: Retrieves auth code and code challenge
+Token Issue Service-->>Data Layer: Retrieves auth code and code challenge
 Token Issue Service-->Token Issue Service: Verifies code verifier with code challenge
+Token Issue Service-->Token Issue Service: Generates access and refresh tokens
+Token Issue Service-->>Data Layer: Stores tokens in session data
 Token Issue Service-->>Client: Returns access and refresh tokens to client
 ```
 
@@ -51,11 +53,13 @@ autonumber
 
 actor Client
 participant Introspection Service
+participant Data Layer
 
 Client-->>Introspection Service: Provides access token
 Note right of Client: GET /introspect
+Introspection Service-->>Data Layer: Retrieves session data
 Introspection Service-->Introspection Service: Validates token
-Introspection Service-->Introspection Service: Queries user information associated with token
+Introspection Service-->>Data Layer: Queries user information associated with token
 Introspection Service-->>Client: Returns user information
 ```
 
@@ -72,11 +76,14 @@ autonumber
 
 actor Client
 participant Refresh Service
+participant Data Layer
 
 Client-->>Refresh Service: Provides refresh token
 Note right of Client: POST /refresh
+Refresh Service-->>Data Layer: Retrieves session data
 Refresh Service-->Refresh Service: Validates token
 Refresh Service-->Refresh Service: Generates new token pair
+Refresh Service-->>Data Layer: Stores tokens in session data
 Refresh Service-->>Client: Provides newly-generated tokens
 ```
 
@@ -92,13 +99,14 @@ sequenceDiagram
 autonumber
 
 actor Client
-
 participant Revocation Service
+participant Data Layer
 
 Client-->>Revocation Service: Provides refresh token
 Note right of Client: POST /revoke
+Revocation Service-->>Data Layer: Retrieves session data
 Revocation Service-->Revocation Service: Validates token
-Revocation Service-->Revocation Service: Destroy session associated with token
+Revocation Service-->>Data Layer: Destroy session associated with token
 Revocation Service-->>Client: Returns HTTP status code success
 ```
 
