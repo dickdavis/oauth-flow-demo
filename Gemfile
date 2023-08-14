@@ -32,6 +32,9 @@ gem 'tailwindcss-rails'
 # Use for performant serialization
 gem 'jsonapi-serializer'
 
+# Use jwt for tokens
+gem 'jwt'
+
 # Use Redis adapter to run Action Cable in production
 gem 'redis', '~> 4.0'
 
