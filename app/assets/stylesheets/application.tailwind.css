@@ -7,6 +7,10 @@
     @apply appearance-none cursor-pointer inline-block font-semibold text-center align-middle no-underline select-none transition-colors border-2 border-solid rounded-md focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 bg-blue-500 text-white border-blue-500 hover:bg-blue-700 px-3 py-2;
   }
 
+  .btn-outline {
+    @apply appearance-none cursor-pointer inline-block font-semibold text-center align-middle no-underline select-none transition-colors border-2 border-solid rounded-md focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 bg-transparent text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white px-3 py-2;
+  }
+
   .card {
     @apply p-2 md:p-4 mx-auto my-4 bg-white dark:bg-gray-700 rounded-xl shadow-md items-center w-full max-w-2xl;
   }
