@@ -3,8 +3,6 @@
 ##
 # Controller for logging in users.
 class SessionsController < ApplicationController
-  def new; end
-
   # rubocop:disable Metrics/AbcSize
   def create
     user = User.find_by(email: params[:email])
@@ -14,7 +12,7 @@ class SessionsController < ApplicationController
       redirect_to root_path
     else
       flash.now.alert = t('.login_failure')
-      render :new
+      render 'oauth/authorize', locals: { state: params[:state] }
     end
   end
   # rubocop:enable Metrics/AbcSize
