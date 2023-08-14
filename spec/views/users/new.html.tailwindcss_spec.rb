@@ -7,7 +7,6 @@ RSpec.describe 'users/new' do
     assign(:user, build(:user))
   end
 
-  # rubocop:disable RSpec/ExampleLength
   it 'renders new user form' do
     render
 
@@ -19,5 +18,4 @@ RSpec.describe 'users/new' do
       assert_select 'input[name=?]', 'user[password_confirmation]'
     end
   end
-  # rubocop:enable RSpec/ExampleLength
 end
