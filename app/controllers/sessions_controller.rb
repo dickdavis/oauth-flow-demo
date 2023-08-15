@@ -18,4 +18,9 @@ class SessionsController < ApplicationController
     end
   end
   # rubocop:enable Metrics/AbcSize
+
+  def destroy
+    session.delete(:user_id)
+    redirect_to root_path
+  end
 end
