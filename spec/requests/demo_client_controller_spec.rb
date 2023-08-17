@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe HomeController do
+RSpec.describe DemoClientController do
   describe 'GET /index' do
     subject(:call_endpoint) { get root_path }
 
