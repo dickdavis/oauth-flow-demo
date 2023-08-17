@@ -33,7 +33,16 @@ directories:
       enabled: false
     TooManyStatements:
       enabled: false
+  "spec":
+    UtilityFunction:
+      enabled: false
 detectors:
   TooManyInstanceVariables:
     exclude:
       - StateTokenEncoderService
+  ControlParameter:
+    exclude:
+      - ClientAuthentication#http_basic_auth_successful?
+  FeatureEnvy:
+    exclude:
+      - ClientAuthentication#http_basic_auth_successful?
