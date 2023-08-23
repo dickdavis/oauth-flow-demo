@@ -2,13 +2,13 @@
 
 require 'rails_helper'
 
-RSpec.shared_context 'with an authenticated client' do |method, path, options = {}|
+RSpec.shared_context 'with an authenticated client' do |method, path|
   subject(:call_endpoint) { send(method, url, **options_for_request) }
 
   let(:url) { send(path) }
-  let(:options_for_request) { { params:, headers: } }
-  let(:params) { (options[:params] || {}).merge(client_id: 'democlient') }
-  let(:headers) { (options[:headers] || {}).merge(http_basic_auth_header) }
+  let(:options_for_request) { { params: shared_context_params, headers: shared_context_headers } }
+  let(:shared_context_params) { params.reverse_merge!(client_id: 'democlient') }
+  let(:shared_context_headers) { headers.reverse_merge!(http_basic_auth_header) }
 
   def http_basic_auth_header
     client_id = 'democlient'
@@ -20,7 +20,7 @@ end
 
 RSpec.shared_examples 'an endpoint that requires client authentication' do
   context 'without client_id param' do
-    let(:params) { nil }
+    let(:shared_context_params) { super().except(:client_id) }
 
     it 'returns HTTP status unauthorized' do
       call_endpoint
@@ -34,7 +34,7 @@ RSpec.shared_examples 'an endpoint that requires client authentication' do
   end
 
   context 'without HTTP basic auth header' do
-    let(:headers) { nil }
+    let(:shared_context_headers) { super().except('HTTP_AUTHORIZATION') }
 
     it 'returns HTTP status unauthorized' do
       call_endpoint
