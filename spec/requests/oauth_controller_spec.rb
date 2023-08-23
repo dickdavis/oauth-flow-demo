@@ -116,4 +116,70 @@ RSpec.describe OAuthController do
       end
     end
   end
+
+  describe 'POST /authenticate' do
+    let(:headers) { {} }
+    let(:params) {  { email:, password: } }
+    let(:user) { create(:user) }
+    let(:email) { user.email }
+    let(:password) { 'password' }
+
+    include_context 'with an authenticated client', :post, :authenticate_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    context 'with valid parameters' do
+      it 'adds the user ID to the session' do
+        call_endpoint
+        expect(controller.session[:user_id]).to eq(user.id.to_s)
+      end
+
+      it 'redirects to the home page' do
+        call_endpoint
+        expect(response).to redirect_to(root_path)
+      end
+    end
+
+    context 'with missing email' do
+      let(:email) { nil }
+
+      it 'does not add the user ID to the session' do
+        call_endpoint
+        expect(controller.session[:user_id]).to be_nil
+      end
+
+      it 'does not redirect to the home page' do
+        call_endpoint
+        expect(response).not_to redirect_to(root_path)
+      end
+    end
+
+    context 'with missing password' do
+      let(:password) { nil }
+
+      it 'does not add the user ID to the session' do
+        call_endpoint
+        expect(controller.session[:user_id]).to be_nil
+      end
+
+      it 'does not redirect to the home page' do
+        call_endpoint
+        expect(response).not_to redirect_to(root_path)
+      end
+    end
+
+    context 'with wrong password' do
+      let(:password) { 'invalidpassword' }
+
+      it 'does not add the user ID to the session' do
+        call_endpoint
+        expect(controller.session[:user_id]).to be_nil
+      end
+
+      it 'does not redirect to the home page' do
+        call_endpoint
+        expect(response).not_to redirect_to(root_path)
+      end
+    end
+  end
 end
