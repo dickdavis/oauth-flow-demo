@@ -37,5 +37,7 @@ module OauthFlowDemo
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    config.oauth = config_for(:oauth)
   end
 end

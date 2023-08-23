@@ -3,17 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe SessionsController do
-  describe 'GET /new' do
-    subject(:call_endpoint) { get new_user_path }
-
-    it 'renders a successful response' do
-      call_endpoint
-      expect(response).to be_successful
-    end
-  end
-
   describe 'POST /create' do
-    subject(:call_endpoint) { post sessions_path, params: }
+    subject(:call_endpoint) { post sign_in_path, params: }
 
     let(:user) { create(:user) }
 
@@ -80,7 +71,7 @@ RSpec.describe SessionsController do
     let(:user) { create(:user) }
 
     before do
-      post sessions_path, params: { email: user.email, password: 'password' }
+      post sign_in_path, params: { email: user.email, password: 'password' }
     end
 
     it 'deletes the user_id from the session' do

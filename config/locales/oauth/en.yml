@@ -1,0 +1,4 @@
+en:
+  oauth:
+    authorize:
+      submit: 'Login'

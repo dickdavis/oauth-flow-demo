@@ -7,3 +7,7 @@ require:
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.2
+RSpec/ExampleLength:
+  Max: 10
+  Exclude:
+    - 'spec/views/**/*'

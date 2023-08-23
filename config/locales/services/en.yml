@@ -1,0 +1,4 @@
+en:
+  services:
+    state_token_encoder:
+      invalid_param: 'The value passed for %{param} is invalid. Value provided: %{value}'
