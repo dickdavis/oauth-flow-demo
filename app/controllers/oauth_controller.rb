@@ -34,7 +34,9 @@ class OAuthController < ApplicationController
 
   def http_basic_auth_successful?
     authenticate_with_http_basic do |id, secret|
-      id == params[:client_id] && secret == Rails.application.credentials.clients[id.to_sym]
+      return false if params.key?(:client_id) && params[:client_id] != id
+
+      secret == Rails.application.credentials.clients[id.to_sym]
     end
   end
 end

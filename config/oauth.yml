@@ -9,3 +9,6 @@ test:
     democlient:
       type: 'confidential'
       redirection_uri: 'http://localhost:3000/'
+    negativetestclient:
+      type: 'confidential'
+      redirection_uri: 'http://localhost:3000/'
