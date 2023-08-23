@@ -11,3 +11,5 @@ RSpec/ExampleLength:
   Max: 10
   Exclude:
     - 'spec/views/**/*'
+RSpec/MultipleMemoizedHelpers:
+  Max: 15
