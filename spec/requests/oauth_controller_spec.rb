@@ -69,6 +69,15 @@ RSpec.describe OAuthController do
 
     it_behaves_like 'an endpoint that requires client authentication'
 
+    context 'when the client_id param is missing' do
+      let(:shared_context_params) { super().except!(:client_id) }
+
+      it 'responds with HTTP status bad request' do
+        call_endpoint
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
     context 'when state token encoder service returns bad request status' do
       let(:status) { :bad_request }
       let(:body) { { errors: 'foobar' } }

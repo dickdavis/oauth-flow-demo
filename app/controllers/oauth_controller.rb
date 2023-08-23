@@ -1,14 +1,19 @@
 # frozen_string_literal: true
 
+require 'oauth'
+
 ##
 # Controller for OAuth flow.
 class OAuthController < ApplicationController
   before_action :authenticate_client
 
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   def authorize
+    client_id = params[:client_id]
+    raise OAuth::MissingClientIdError if client_id.blank?
+
     status, body = StateTokenEncoderService.call(
-      client_id: params[:client_id],
+      client_id:,
       client_state: params[:state],
       code_challenge: params[:code_challenge],
       code_challenge_method: params[:code_challenge_method],
@@ -21,8 +26,10 @@ class OAuthController < ApplicationController
     when :bad_request
       render json: body, status:
     end
+  rescue OAuth::MissingClientIdError => error
+    render 'oauth/client_error', status: :bad_request, locals: { message: error.message }
   end
-  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   private
 
