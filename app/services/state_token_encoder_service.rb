@@ -49,7 +49,7 @@ class StateTokenEncoderService < ApplicationService
   end
 
   def valid_client_id?
-    client_id.present?
+    client_id.present? && Rails.configuration.oauth.clients[client_id.to_sym]
   end
 
   def valid_code_challenge?

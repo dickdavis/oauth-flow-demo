@@ -1,0 +1,11 @@
+development:
+  clients:
+    democlient:
+      type: 'confidential'
+      redirection_uri: 'http://localhost:3000/'
+
+test:
+  clients:
+    democlient:
+      type: 'confidential'
+      redirection_uri: 'http://localhost:3000/'
