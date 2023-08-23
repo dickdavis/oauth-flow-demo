@@ -19,8 +19,8 @@ RSpec.shared_context 'with an authenticated client' do |method, path|
 end
 
 RSpec.shared_examples 'an endpoint that requires client authentication' do
-  context 'without client_id param' do
-    let(:shared_context_params) { super().except(:client_id) }
+  context 'with client_id param that does not match client id in header' do
+    let(:shared_context_params) { super().merge(client_id: 'negativetestclient') }
 
     it 'returns HTTP status unauthorized' do
       call_endpoint
