@@ -50,6 +50,14 @@ end
 
 RSpec.describe OAuthController do
   describe 'GET /authorize' do
+    let(:headers) { {} }
+    let(:params) { { client_id:, state:, code_challenge:, code_challenge_method:, response_type: } }
+    let(:client_id) { 'democlient' }
+    let(:state) { 'foobar' }
+    let(:code_challenge) { 'code_challenge' }
+    let(:code_challenge_method) { 'S256' }
+    let(:response_type) { 'code' }
+
     let(:state_token_encoder_service) { instance_double(StateTokenEncoderService, call: results) }
     let(:results) { StateTokenEncoderService::Response[status, body] }
 
@@ -65,6 +73,17 @@ RSpec.describe OAuthController do
       let(:status) { :bad_request }
       let(:body) { { errors: 'foobar' } }
 
+      it 'calls the state token encoder service with the params' do
+        call_endpoint
+        expect(StateTokenEncoderService).to have_received(:new).with(
+          client_id:,
+          client_state: state,
+          code_challenge:,
+          code_challenge_method:,
+          response_type:
+        )
+      end
+
       it 'returns http status bad request' do
         call_endpoint
         expect(response).to have_http_status(:bad_request)
@@ -79,6 +98,17 @@ RSpec.describe OAuthController do
     context 'when state token encoder service returns ok status' do
       let(:status) { :ok }
       let(:body) { 'state token' }
+
+      it 'calls the state token encoder service with the params' do
+        call_endpoint
+        expect(StateTokenEncoderService).to have_received(:new).with(
+          client_id:,
+          client_state: state,
+          code_challenge:,
+          code_challenge_method:,
+          response_type:
+        )
+      end
 
       it 'returns HTTP status ok' do
         call_endpoint
