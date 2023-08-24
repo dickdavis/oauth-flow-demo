@@ -45,9 +45,12 @@ detectors:
       - OAuthController#authorize
       - ClientRedirectUrlService#call
       - StateTokenEncoderService#initialize
+      - AuthorizationGrantsController#create
+      - SessionsController#create
   ControlParameter:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
   FeatureEnvy:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
+      - AuthorizationGrantsController#create

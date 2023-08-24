@@ -14,4 +14,8 @@ module OAuth
   ##
   # Error for when client redirection URI is invalid.
   class InvalidRedirectUrlError < StandardError; end
+
+  ##
+  # Error for when resource owner denies access request.
+  class AccessDenied < StandardError; end
 end
