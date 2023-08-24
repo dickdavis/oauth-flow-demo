@@ -2,7 +2,7 @@
   <div class="block w-full m-auto">
     <div class="card">
       <%= tag.p alert, class: 'text-center text-red-800 bg-red-200 rounded border-1 border-red-800 p-4' if alert %>
-      <%= form_with(url: sign_in_path, method: 'post', data: { turbo: "false" }) do |form| %>
+      <%= form_with(url: sign_in_path, method: 'post', data: { turbo: 'false' }) do |form| %>
         <%= form.hidden_field :state, value: state %>
         <div class="my-3">
           <%= form.label :email, class: 'form-label' %>

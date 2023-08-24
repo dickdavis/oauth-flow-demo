@@ -110,9 +110,9 @@ RSpec.describe OAuthController do
         )
       end
 
-      it 'returns HTTP status ok' do
+      it 'redirects the user to the sign in page' do
         call_endpoint
-        expect(response).to have_http_status(:ok)
+        expect(response).to redirect_to(sign_in_path(state: body))
       end
     end
   end

@@ -3,7 +3,8 @@
 Rails.application.routes.draw do
   resources :users, only: %i[new create]
 
-  post 'sign-in', to: 'sessions#create', as: :sign_in
+  get 'sign-in', to: 'sessions#new', as: :sign_in
+  post 'sign-in', to: 'sessions#create'
   delete 'sign-out', to: 'sessions#destroy', as: :sign_out
 
   get 'authorize', to: 'oauth#authorize'
