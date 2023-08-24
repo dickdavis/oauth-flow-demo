@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'oauth'
-
 ##
 # Service which returns a valid client redirect url with provided params
 class ClientRedirectUrlService < ApplicationService

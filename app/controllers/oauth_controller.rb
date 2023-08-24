@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'oauth'
-
 ##
 # Controller for OAuth flow.
 class OAuthController < ApplicationController
