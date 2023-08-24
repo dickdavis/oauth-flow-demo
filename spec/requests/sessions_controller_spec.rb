@@ -3,6 +3,15 @@
 require 'rails_helper'
 
 RSpec.describe SessionsController do
+  describe 'GET /new' do
+    subject(:call_endpoint) { get sign_in_path }
+
+    it 'renders a successful response' do
+      call_endpoint
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe 'POST /create' do
     subject(:call_endpoint) { post sign_in_path, params: }
 

@@ -17,7 +17,7 @@ class OAuthController < ApplicationController
 
     case status
     when :ok
-      render 'oauth/authorize', locals: { state: body }
+      redirect_to sign_in_path(state: body)
     when :bad_request
       render json: body, status:
     end

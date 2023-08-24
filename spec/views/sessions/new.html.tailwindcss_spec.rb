@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-RSpec.describe 'oauth/authorize' do
+RSpec.describe 'sessions/new' do
   it 'renders log in form' do
-    render template: 'oauth/authorize', locals: { state: 'state token' }
+    render template: 'sessions/new', locals: { state: 'state token' }
 
     assert_select 'form[action=?][method=?]', sign_in_path, 'post' do
       assert_select 'input[type=hidden][name=?]', 'state'
