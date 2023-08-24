@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'oauth/client_error' do
   before do
-    render template: 'oauth/client_error', locals: { message: 'foobar' }
+    render template: 'oauth/client_error', locals: { error_class: 'foo', message: 'bar' }
   end
 
   it 'renders the title' do
@@ -15,7 +15,11 @@ RSpec.describe 'oauth/client_error' do
     expect(rendered).to match(/#{I18n.t('oauth.client_error.lede')}/)
   end
 
-  it 'renders the message' do
-    expect(rendered).to match(/foobar/)
+  it 'renders the error class' do
+    expect(rendered).to match(/foo/)
+  end
+
+  it 'renders the error message' do
+    expect(rendered).to match(/bar/)
   end
 end

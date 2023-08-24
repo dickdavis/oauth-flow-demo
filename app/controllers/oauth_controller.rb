@@ -32,7 +32,9 @@ class OAuthController < ApplicationController
       redirect_to result.url, allow_other_host: true
     end
   rescue OAuth::MissingClientIdError, OAuth::InvalidRedirectUrlError => error
-    render 'oauth/client_error', status: :bad_request, locals: { message: error.message }
+    render 'oauth/client_error',
+           status: :bad_request,
+           locals: { error_class: error.class, message: error.message }
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
