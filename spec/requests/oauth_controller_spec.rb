@@ -83,8 +83,8 @@ RSpec.describe OAuthController do
       end
     end
 
-    context 'when state token encoder service returns bad request status' do
-      let(:status) { :bad_request }
+    context 'when state token encoder service returns invalid_request status' do
+      let(:status) { :invalid_request }
       let(:body) { { errors: 'foobar' } }
 
       it 'calls the state token encoder service with the params' do

@@ -20,7 +20,7 @@ class StateTokenEncoderService < ApplicationService
   end
 
   def call
-    return Response[:bad_request, { errors: errors_from_params }] if errors_from_params.present?
+    return Response[:invalid_request, { errors: errors_from_params }] if errors_from_params.present?
 
     payload = { client_id:, client_state:, code_challenge:, code_challenge_method:, response_type: }
     Response[:ok, JsonWebToken.encode(payload)]
