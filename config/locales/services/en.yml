@@ -2,3 +2,5 @@ en:
   services:
     state_token_encoder:
       invalid_param: 'The value passed for %{param} is invalid. Value provided: %{value}'
+    client_redirect_url_service:
+      invalid_scheme: 'Invalid URL scheme provided.'

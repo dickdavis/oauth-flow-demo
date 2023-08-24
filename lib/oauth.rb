@@ -10,4 +10,8 @@ module OAuth
       super
     end
   end
+
+  ##
+  # Error for when client redirection URI is invalid.
+  class InvalidRedirectUrlError < StandardError; end
 end

@@ -8,11 +8,22 @@ RSpec.describe ClientRedirectUrlService do
       described_class.new(client_id:, params:).call
     end
 
-    let(:client_id) { 'democlient' }
     let(:params) { { foo: 'oof', bar: 'rab' } }
 
-    it 'returns the redirect_url with params for the provided client' do
-      expect(service_call.url).to eq('http://localhost:3000/?foo=oof&bar=rab')
+    context 'with valid client config' do
+      let(:client_id) { 'democlient' }
+
+      it 'returns the redirect_url with params for the provided client' do
+        expect(service_call.url).to eq('http://localhost:3000/?foo=oof&bar=rab')
+      end
+    end
+
+    context 'with invalid client config' do
+      let(:client_id) { 'invalidclient' }
+
+      it 'raises an OAuth::InvalidRedirectUrlError' do
+        expect { service_call }.to raise_error(OAuth::InvalidRedirectUrlError)
+      end
     end
   end
 end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'oauth'
+
 ##
 # Service which returns a valid client redirect url with provided params
 class ClientRedirectUrlService < ApplicationService
@@ -14,7 +16,13 @@ class ClientRedirectUrlService < ApplicationService
   def call
     redirect_url = url_from_config
     redirect_url.query = encoded_params
+    unless redirect_url.is_a?(URI::HTTP) || redirect_url.is_a?(URI::HTTPS)
+      raise OAuth::InvalidRedirectUrlError, I18n.t('services.client_redirect_url_service.invalid_scheme')
+    end
+
     Response[redirect_url.to_s]
+  rescue URI::InvalidURIError, ArgumentError => error
+    raise OAuth::InvalidRedirectUrlError, error.message
   end
 
   private

@@ -15,3 +15,5 @@ RSpec/ExampleLength:
     - 'spec/views/**/*'
 RSpec/MultipleMemoizedHelpers:
   Max: 15
+RSpec/NestedGroups:
+  Max: 5
