@@ -3,6 +3,8 @@
 ##
 # Controller for granting authorization to clients
 class AuthorizationGrantsController < ApplicationController
+  before_action :authenticate_user
+
   def new
     state = params[:state]
     payload = JsonWebToken.decode(state)

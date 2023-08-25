@@ -6,13 +6,14 @@ RSpec.describe AuthorizationGrantsController do
   describe 'GET /new' do
     subject(:call_endpoint) { get new_authorization_grant_path, params: { state: } }
 
-    let(:state) do
-      JsonWebToken.encode(
-        {
-          client_id: 'democlient'
-        }
-      )
+    let(:user) { create(:user) }
+    let(:state) { JsonWebToken.encode({ client_id: 'democlient' }) }
+
+    before do
+      sign_in(user)
     end
+
+    it_behaves_like 'an endpoint that requires user authentication'
 
     it 'renders a successful response' do
       call_endpoint
@@ -23,6 +24,8 @@ RSpec.describe AuthorizationGrantsController do
   describe 'POST /create' do
     subject(:call_endpoint) { post authorization_grants_path, params: { state:, approve: } }
 
+    let(:user) { create(:user) }
+    let(:approve) { 'true' }
     let(:state) { JsonWebToken.encode(payload) }
     let(:payload) do
       {
@@ -34,8 +37,10 @@ RSpec.describe AuthorizationGrantsController do
     end
 
     before do
-      post sign_in_path, params: { email: create(:user).email, password: 'password' }
+      sign_in(user)
     end
+
+    it_behaves_like 'an endpoint that requires user authentication'
 
     context 'when the resource owner rejects the authorization grant' do
       let(:approve) { 'false' }
@@ -47,8 +52,6 @@ RSpec.describe AuthorizationGrantsController do
     end
 
     context 'when the resource owner approves the authorization grant' do
-      let(:approve) { 'true' }
-
       context 'when the authorization grant fails to create' do
         let(:authorization_grant_double) { instance_double(AuthorizationGrant, save: false) }
 
