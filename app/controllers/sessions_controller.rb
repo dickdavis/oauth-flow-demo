@@ -3,9 +3,7 @@
 ##
 # Controller for logging in users.
 class SessionsController < ApplicationController
-  def new
-    render 'sessions/new', locals: { state: params[:state] }
-  end
+  def new; end
 
   # rubocop:disable Metrics/AbcSize
   def create
@@ -16,7 +14,7 @@ class SessionsController < ApplicationController
       redirect_to url_for_sign_in_redirect
     else
       flash.now.alert = t('.login_failure')
-      render 'sessions/new', locals: { state: params[:state] }
+      render 'sessions/new'
     end
   end
   # rubocop:enable Metrics/AbcSize
