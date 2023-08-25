@@ -5,6 +5,8 @@
 class User < ApplicationRecord
   has_secure_password
 
+  has_many :authorization_grants, dependent: :destroy
+
   validates :first_name, presence: true, length: { maximum: 255 }
   validates :last_name, presence: true, length: { maximum: 255 }
   validates :email,

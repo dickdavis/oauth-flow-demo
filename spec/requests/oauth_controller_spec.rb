@@ -130,9 +130,9 @@ RSpec.describe OAuthController do
         )
       end
 
-      it 'redirects the user to the sign in page' do
+      it 'redirects the user to the authorization grant page' do
         call_endpoint
-        expect(response).to redirect_to(sign_in_path(state: body))
+        expect(response).to redirect_to(new_authorization_grant_path(state: body))
       end
     end
   end

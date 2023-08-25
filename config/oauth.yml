@@ -1,14 +1,17 @@
 development:
   clients:
     democlient:
+      name: 'Demo Client'
       type: 'confidential'
       redirection_uri: 'http://localhost:3000/'
 
 test:
   clients:
     democlient:
+      name: 'Demo Client'
       type: 'confidential'
       redirection_uri: 'http://localhost:3000/'
     negativetestclient:
+      name: 'Negative Test Client'
       type: 'confidential'
       redirection_uri: 'http://localhost:3000/'

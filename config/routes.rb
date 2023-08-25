@@ -9,5 +9,7 @@ Rails.application.routes.draw do
 
   get 'authorize', to: 'oauth#authorize'
 
+  resources :authorization_grants, path: 'authorization-grants', only: %i[new create]
+
   root 'demo_client#index'
 end

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'oauth'
-
 ##
 # Controller for OAuth flow.
 class OAuthController < ApplicationController
@@ -23,7 +21,7 @@ class OAuthController < ApplicationController
 
     case status
     when :ok
-      redirect_to sign_in_path(state: body)
+      redirect_to new_authorization_grant_path(state: body)
     when :invalid_request
       result = ClientRedirectUrlService.call(
         client_id:,

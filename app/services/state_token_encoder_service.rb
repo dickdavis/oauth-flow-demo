@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'json_web_token'
-
 ##
 # Service which encodes current sign-in state into a JWT token
 class StateTokenEncoderService < ApplicationService

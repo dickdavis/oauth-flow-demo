@@ -3,9 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe User do
-  describe 'validations' do
-    subject(:model) { build(:user) }
+  subject(:model) { build(:user) }
 
+  describe 'validations' do
     it { is_expected.to have_secure_password }
     it { is_expected.to validate_presence_of(:first_name) }
     it { is_expected.to validate_length_of(:first_name).is_at_most(255) }
@@ -17,5 +17,9 @@ RSpec.describe User do
     it { is_expected.to allow_value('test@test.com').for(:email) }
     it { is_expected.not_to allow_value('test@test').for(:email) }
     it { is_expected.not_to allow_value('testtest.com').for(:email) }
+  end
+
+  describe 'associations' do
+    it { is_expected.to have_many(:authorization_grants) }
   end
 end
