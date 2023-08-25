@@ -47,6 +47,7 @@ detectors:
       - StateTokenEncoderService#initialize
       - AuthorizationGrantsController#create
       - SessionsController#create
+      - SessionsController#url_for_sign_in_redirect
   ControlParameter:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
