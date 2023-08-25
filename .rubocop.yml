@@ -7,9 +7,13 @@ require:
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.2
+Naming/RescuedExceptionsVariableName:
+  Enabled: false
 RSpec/ExampleLength:
   Max: 10
   Exclude:
     - 'spec/views/**/*'
 RSpec/MultipleMemoizedHelpers:
   Max: 15
+RSpec/NestedGroups:
+  Max: 5

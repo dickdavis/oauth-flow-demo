@@ -61,16 +61,30 @@ RSpec.describe OAuthController do
     let(:state_token_encoder_service) { instance_double(StateTokenEncoderService, call: results) }
     let(:results) { StateTokenEncoderService::Response[status, body] }
 
+    let(:client_redirect_url_service) { instance_double(ClientRedirectUrlService, call: redirect_results) }
+    let(:redirect_results) { ClientRedirectUrlService::Response[redirect_url] }
+    let(:redirect_url) { 'http://localhost:3000/callback?code=foo&state=bar' }
+
     before do
       allow(StateTokenEncoderService).to receive(:new).and_return(state_token_encoder_service)
+      allow(ClientRedirectUrlService).to receive(:new).and_return(client_redirect_url_service)
     end
 
     include_context 'with an authenticated client', :get, :authorize_path
 
     it_behaves_like 'an endpoint that requires client authentication'
 
-    context 'when state token encoder service returns bad request status' do
-      let(:status) { :bad_request }
+    context 'when the client_id param is missing' do
+      let(:shared_context_params) { super().except!(:client_id) }
+
+      it 'responds with HTTP status bad request' do
+        call_endpoint
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    context 'when state token encoder service returns invalid_request status' do
+      let(:status) { :invalid_request }
       let(:body) { { errors: 'foobar' } }
 
       it 'calls the state token encoder service with the params' do
@@ -84,14 +98,20 @@ RSpec.describe OAuthController do
         )
       end
 
-      it 'returns http status bad request' do
+      it 'redirects to client redirection_uri with state and error params' do
         call_endpoint
-        expect(response).to have_http_status(:bad_request)
+        expect(response).to redirect_to(redirect_url)
       end
 
-      it 'returns a JSON response with the error message' do
-        call_endpoint
-        expect(response.parsed_body).to eq(body.as_json)
+      context 'when the client redirect url service raises an error' do
+        before do
+          allow(client_redirect_url_service).to receive(:call).and_raise(OAuth::InvalidRedirectUrlError)
+        end
+
+        it 'responds with HTTP status bad request' do
+          call_endpoint
+          expect(response).to have_http_status(:bad_request)
+        end
       end
     end
 

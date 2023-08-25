@@ -3,8 +3,8 @@
 require 'rails_helper'
 
 RSpec.shared_examples 'returns status and errors for invalid param' do |param|
-  it 'returns bad_request status' do
-    expect(service_call.status).to eq(:bad_request)
+  it 'returns invalid_request status' do
+    expect(service_call.status).to eq(:invalid_request)
   end
 
   it 'returns invalid param error message' do

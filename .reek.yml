@@ -40,6 +40,11 @@ detectors:
   TooManyInstanceVariables:
     exclude:
       - StateTokenEncoderService
+  TooManyStatements:
+    exclude:
+      - OAuthController#authorize
+      - ClientRedirectUrlService#call
+      - StateTokenEncoderService#initialize
   ControlParameter:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
