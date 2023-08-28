@@ -7,5 +7,9 @@ RSpec.describe OAuthController do
     it 'routes to #authorize' do
       expect(get: '/authorize').to route_to('oauth#authorize')
     end
+
+    it 'routes to #token' do
+      expect(post: '/token').to route_to('oauth#token')
+    end
   end
 end

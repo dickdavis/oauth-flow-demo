@@ -136,4 +136,82 @@ RSpec.describe OAuthController do
       end
     end
   end
+
+  describe 'POST /token' do
+    let(:headers) { {} }
+    let(:params) { { code:, code_verifier:, grant_type: } }
+    let(:grant_type) { 'authorization_code' }
+    let(:code_verifier) { 'code_verifier' }
+    let(:code) { authorization_grant.id }
+    let(:authorization_grant) { create(:authorization_grant, user:) }
+    let(:user) { create(:user) }
+
+    let(:token_request_validator_service) { instance_double(TokenRequestValidatorService) }
+
+    before do
+      allow(TokenRequestValidatorService).to receive(:new).and_return(token_request_validator_service)
+    end
+
+    include_context 'with an authenticated client', :post, :token_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'calls the token request validator service with the params' do
+      allow(token_request_validator_service).to receive(:call!).and_return(true)
+      call_endpoint
+      expect(TokenRequestValidatorService).to have_received(:new).with(
+        authorization_grant:,
+        code_verifier:,
+        grant_type:
+      )
+    end
+
+    context 'when the token request validator services raises the unsupported grant type error' do
+      before do
+        allow(token_request_validator_service).to receive(:call!).and_raise(OAuth::UnsupportedGrantTypeError)
+      end
+
+      it 'responds with HTTP status bad request' do
+        call_endpoint
+        expect(response).to have_http_status(:bad_request)
+      end
+
+      it 'responds with error unsupported_grant_type as JSON' do
+        call_endpoint
+        expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
+      end
+    end
+
+    context 'when the token request validator services raises the invalid grant error' do
+      before do
+        allow(token_request_validator_service).to receive(:call!).and_raise(OAuth::InvalidGrantError)
+      end
+
+      it 'responds with HTTP status bad request' do
+        call_endpoint
+        expect(response).to have_http_status(:bad_request)
+      end
+
+      it 'responds with error invalid_grant as JSON' do
+        call_endpoint
+        expect(response.parsed_body).to eq({ 'error' => 'invalid_grant' })
+      end
+    end
+
+    context 'when the token request validator services raises the invalid request error' do
+      before do
+        allow(token_request_validator_service).to receive(:call!).and_raise(OAuth::InvalidRequestError)
+      end
+
+      it 'responds with HTTP status bad request' do
+        call_endpoint
+        expect(response).to have_http_status(:bad_request)
+      end
+
+      it 'responds with error invalid_grant as JSON' do
+        call_endpoint
+        expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+      end
+    end
+  end
 end
