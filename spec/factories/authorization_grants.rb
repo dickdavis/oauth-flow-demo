@@ -7,6 +7,7 @@ FactoryBot.define do
     expires_at { 9.minutes.from_now }
     client_id { 'democlient' }
     client_redirection_uri { 'http://localhost:3000/' }
+    redeemed { false }
     user
   end
 end
