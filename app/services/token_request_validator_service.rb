@@ -12,7 +12,6 @@ class TokenRequestValidatorService < ApplicationService
 
   def call
     call!
-    true
   rescue OAuth::UnsupportedGrantTypeError, OAuth::InvalidGrantError, OAuth::InvalidRequestError
     false
   end
@@ -38,7 +37,7 @@ class TokenRequestValidatorService < ApplicationService
   end
 
   def invalid_code_verifier?
-    challenge = Digest::SHA256.base64digest(code_verifier).tr('+/', '-_').tr('=', '')
+    challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier), padding: false)
     authorization_grant.code_challenge != challenge
   end
 end
