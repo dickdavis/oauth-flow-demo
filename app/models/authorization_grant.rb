@@ -6,6 +6,7 @@ class AuthorizationGrant < ApplicationRecord
   VALID_CODE_CHALLENGE_METHODS = %w[S256].freeze
 
   belongs_to :user
+  has_many :oauth_sessions, dependent: :destroy
 
   before_validation :generate_expires_at
 

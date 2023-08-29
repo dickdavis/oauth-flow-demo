@@ -39,5 +39,6 @@ module OauthFlowDemo
     config.generators.system_tests = nil
 
     config.oauth = config_for(:oauth)
+    config.active_record.encryption.extend_queries = true
   end
 end
