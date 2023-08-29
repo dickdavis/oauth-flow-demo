@@ -25,25 +25,21 @@ puts <<~TEXT
   client_secret: #{client_secret}
 TEXT
 
-# puts 'Authorization code? -> '
-# authorization_code = gets.chomp
-#
-# uri = URI.parse('https://api.dropbox.com/oauth2/token')
-# request = Net::HTTP::Post.new(uri)
-# request.set_form_data(
-#   'client_id' => app_key,
-#   'code' => authorization_code,
-#   'code_verifier' => code_verifier,
-#   'grant_type' => 'authorization_code',
-# )
-#
-# req_options = {
-#   use_ssl: uri.scheme == 'https',
-# }
-#
-# response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-#   http.request(request)
-# end
-#
-# puts response.body
+puts 'Authorization code? -> '
+authorization_code = gets.chomp
+
+uri = URI.parse('http://localhost:3000/token')
+request = Net::HTTP::Post.new(uri)
+request.basic_auth(client_id, client_secret)
+request.set_form_data(
+  'code' => authorization_code,
+  'code_verifier' => code_verifier,
+  'grant_type' => 'authorization_code'
+)
+
+response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+  http.request(request)
+end
+
+puts response.body
 # puts "Access token: #{response.body['access_token']}"
