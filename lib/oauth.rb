@@ -18,4 +18,16 @@ module OAuth
   ##
   # Error for when resource owner denies access request.
   class AccessDenied < StandardError; end
+
+  ##
+  # Error for when client provides an unsupported grant type param.
+  class UnsupportedGrantTypeError < StandardError; end
+
+  ##
+  # Error for when client provides a code that does not map to an valid authorization grant.
+  class InvalidGrantError < StandardError; end
+
+  ##
+  # Error for when client provides a param that fails validation.
+  class InvalidRequestError < StandardError; end
 end

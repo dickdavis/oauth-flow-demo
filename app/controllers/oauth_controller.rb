@@ -4,6 +4,7 @@
 # Controller for OAuth flow.
 class OAuthController < ApplicationController
   before_action :authenticate_client
+  skip_before_action :verify_authenticity_token, only: :token
 
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   def authorize
@@ -35,6 +36,19 @@ class OAuthController < ApplicationController
            locals: { error_class: error.class, message: error.message }
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+  def token
+    authorization_grant = AuthorizationGrant.find_by(id: params[:code])
+    TokenRequestValidatorService.call!(
+      authorization_grant:, code_verifier: params[:code_verifier], grant_type: params[:grant_type]
+    )
+  rescue OAuth::UnsupportedGrantTypeError
+    render json: { error: 'unsupported_grant_type' }, status: :bad_request
+  rescue OAuth::InvalidGrantError
+    render json: { error: 'invalid_grant' }, status: :bad_request
+  rescue OAuth::InvalidRequestError
+    render json: { error: 'invalid_request' }, status: :bad_request
+  end
 
   private
 

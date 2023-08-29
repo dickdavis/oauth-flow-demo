@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   delete 'sign-out', to: 'sessions#destroy', as: :sign_out
 
   get 'authorize', to: 'oauth#authorize'
+  post 'token', to: 'oauth#token'
 
   resources :authorization_grants, path: 'authorization-grants', only: %i[new create]
 
