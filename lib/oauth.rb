@@ -30,4 +30,8 @@ module OAuth
   ##
   # Error for when client provides a param that fails validation.
   class InvalidRequestError < StandardError; end
+
+  ##
+  # Error for when server experiences an error.
+  class ServerError < StandardError; end
 end

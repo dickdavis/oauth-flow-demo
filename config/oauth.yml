@@ -1,4 +1,5 @@
 development:
+  issuer_url: 'htt://localhost:3000/'
   clients:
     democlient:
       name: 'Demo Client'
@@ -6,6 +7,7 @@ development:
       redirection_uri: 'http://localhost:3000/'
 
 test:
+  issuer_url: 'htt://localhost:3000/'
   clients:
     democlient:
       name: 'Demo Client'

@@ -4,3 +4,6 @@ en:
       invalid_param: 'The value passed for %{param} is invalid. Value provided: %{value}'
     client_redirect_url_service:
       invalid_scheme: 'Invalid URL scheme provided.'
+    oauth_token_encoder_service:
+      invalid_client_id: 'Invalid value for client_id provided. Value provided: %{value}'
+      invalid_expiration: 'Invalid value for expiration provided. Value provided: %{value}'
