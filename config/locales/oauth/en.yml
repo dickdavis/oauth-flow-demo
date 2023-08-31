@@ -3,3 +3,5 @@ en:
     client_error:
       title: 'Client Error'
       lede: 'The request provided by the client to this server is malformed. Please report this error through the client support channel.'
+    server_error:
+      oauth_session_failure: 'Failed to create OAuthSession. Errors: %{errors}'

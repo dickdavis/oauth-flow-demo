@@ -146,10 +146,15 @@ RSpec.describe OAuthController do
     let(:authorization_grant) { create(:authorization_grant, user:) }
     let(:user) { create(:user) }
 
-    let(:token_request_validator_service) { instance_double(TokenRequestValidatorService) }
+    let(:token_request_validator_service) { instance_double(TokenRequestValidatorService, call!: true) }
+    let(:oauth_token_encoder_service) { instance_double(OAuthTokenEncoderService) }
+    let(:access_token_results) { OAuthTokenEncoderService::Response[SecureRandom.uuid, 'access_token'] }
+    let(:refresh_token_results) { OAuthTokenEncoderService::Response[SecureRandom.uuid, 'refresh_token'] }
 
     before do
       allow(TokenRequestValidatorService).to receive(:new).and_return(token_request_validator_service)
+      allow(OAuthTokenEncoderService).to receive(:new).and_return(oauth_token_encoder_service)
+      allow(oauth_token_encoder_service).to receive(:call).and_return(access_token_results, refresh_token_results)
     end
 
     include_context 'with an authenticated client', :post, :token_path
@@ -157,7 +162,6 @@ RSpec.describe OAuthController do
     it_behaves_like 'an endpoint that requires client authentication'
 
     it 'calls the token request validator service with the params' do
-      allow(token_request_validator_service).to receive(:call!).and_return(true)
       call_endpoint
       expect(TokenRequestValidatorService).to have_received(:new).with(
         authorization_grant:,
@@ -211,6 +215,60 @@ RSpec.describe OAuthController do
       it 'responds with error invalid_grant as JSON' do
         call_endpoint
         expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+      end
+    end
+
+    context 'when the token request validator service does not raise an error' do
+      it 'calls the oauth token encoder service to create both the access and refresh tokens' do
+        call_endpoint
+        expect(OAuthTokenEncoderService).to have_received(:new).exactly(2).times
+      end
+
+      it 'creates an OAuthSession record' do
+        expect { call_endpoint }.to change(OAuthSession, :count).by(1)
+      end
+
+      it 'saves the access_token_jti in the OAuthSession' do
+        call_endpoint
+        expect(OAuthSession.last.access_token_jti).to eq(access_token_results.jti)
+      end
+
+      it 'saves the refresh_token_jti in the OAuthSession' do
+        call_endpoint
+        expect(OAuthSession.last.refresh_token_jti).to eq(refresh_token_results.jti)
+      end
+
+      it 'responds with HTTP status ok' do
+        call_endpoint
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'renders the serialized token data' do
+        call_endpoint
+        expect(response.parsed_body).to include(
+          {
+            'access_token' => 'access_token',
+            'refresh_token' => 'refresh_token',
+            'token_type' => 'bearer',
+            'expires_in' => 5.minutes.from_now.to_i
+          }
+        )
+      end
+
+      context 'when the oauth token encoder service raises the invalid request error' do
+        before do
+          allow(oauth_token_encoder_service).to receive(:call).and_raise(OAuth::ServerError, 'foobar')
+        end
+
+        it 'responds with HTTP status internal_server_error' do
+          call_endpoint
+          expect(response).to have_http_status(:internal_server_error)
+        end
+
+        it 'responds with error server_error as JSON' do
+          call_endpoint
+          expect(response.parsed_body).to eq({ 'error' => 'server_error' })
+        end
       end
     end
   end
