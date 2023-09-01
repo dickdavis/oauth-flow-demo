@@ -43,7 +43,7 @@ class OAuthController < ApplicationController
     )
 
     client_id = authorization_grant.client_id
-    access_token_expiration = 5.minutes.from_now
+    access_token_expiration = oauth_config.access_token_expiration.minutes.from_now
     access_token_jti, access_token = OAuthTokenEncoderService.call(
       client_id:,
       expiration: access_token_expiration,
@@ -52,7 +52,7 @@ class OAuthController < ApplicationController
 
     refresh_token_jti, refresh_token = OAuthTokenEncoderService.call(
       client_id:,
-      expiration: 14.days.from_now
+      expiration: oauth_config.refresh_token_expiration.minutes.from_now
     ).deconstruct
 
     oauth_session = OAuthSession.new(access_token_jti:, refresh_token_jti:, authorization_grant:)
@@ -76,6 +76,10 @@ class OAuthController < ApplicationController
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   private
+
+  def oauth_config
+    @oauth_config ||= Rails.configuration.oauth
+  end
 
   def authenticate_client
     return if http_basic_auth_successful?
