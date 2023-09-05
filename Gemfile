@@ -30,7 +30,8 @@ gem 'stimulus-rails'
 gem 'tailwindcss-rails'
 
 # Use for performant serialization
-gem 'jsonapi-serializer'
+gem 'blueprinter'
+gem 'oj'
 
 # Use jwt for tokens
 gem 'jwt'
