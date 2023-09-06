@@ -1,5 +1,6 @@
 development:
-  issuer_url: 'htt://localhost:3000/'
+  audience_url: 'http://localhost:3000/api/'
+  issuer_url: 'http://localhost:3000/'
   access_token_expiration: 5 # In minutes
   refresh_token_expiration: 20160 # In minutes (14 days)
   clients:
@@ -9,7 +10,8 @@ development:
       redirection_uri: 'http://localhost:3000/'
 
 test:
-  issuer_url: 'htt://localhost:3000/'
+  audience_url: 'http://localhost:3000/api/'
+  issuer_url: 'http://localhost:3000/'
   access_token_expiration: 5 # In minutes
   refresh_token_expiration: 20160 # In minutes (14 days)
   clients:

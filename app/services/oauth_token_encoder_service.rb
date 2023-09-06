@@ -18,9 +18,9 @@ class OAuthTokenEncoderService < ApplicationService
     raise OAuth::ServerError, invalid_param_message(:expiration) unless valid_expiration?
 
     payload = {
-      aud: client_id,
+      aud: oauth_config.audience_url,
       iat: Time.zone.now.to_i,
-      iss: Rails.configuration.oauth.issuer_url,
+      iss: oauth_config.issuer_url,
       jti: SecureRandom.uuid
     }.merge(optional_claims)
 
@@ -34,8 +34,12 @@ class OAuthTokenEncoderService < ApplicationService
 
   attr_reader :client_id, :expiration, :optional_claims
 
+  def oauth_config
+    @oauth_config ||= Rails.configuration.oauth
+  end
+
   def valid_client_id?
-    client_id.present? && Rails.configuration.oauth.clients.key?(client_id.to_sym)
+    client_id.present? && oauth_config.clients.key?(client_id.to_sym)
   end
 
   def valid_expiration?
