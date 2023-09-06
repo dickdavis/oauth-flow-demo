@@ -39,7 +39,7 @@ RSpec.describe OAuthTokenEncoderService do # rubocop:disable RSpec/FilePath
 
       it 'returns a token with a valid aud claim' do
         token = JsonWebToken.decode(service_call.token)
-        expect(token[:aud]).to eq(client_id)
+        expect(token[:aud]).to eq(Rails.configuration.oauth.audience_url)
       end
 
       it 'returns a token with a valid exp claim' do
