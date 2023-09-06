@@ -11,7 +11,12 @@ module JsonWebToken
   end
 
   def self.decode(token)
-    (payload,) = JWT.decode(token, Rails.application.credentials.secret_key_base)
+    (payload,) = JWT.decode(
+      token,
+      Rails.application.credentials.secret_key_base,
+      true,
+      { verify_expiration: false, algorithm: 'HS256' }
+    )
     ActiveSupport::HashWithIndifferentAccess.new(payload)
   end
 end
