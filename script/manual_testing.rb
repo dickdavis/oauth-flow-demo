@@ -23,6 +23,7 @@ puts <<~TEXT
   The client used by this test script has the following credentials:
   client_id: #{client_id}
   client_secret: #{client_secret}
+
 TEXT
 
 puts 'Authorization code? -> '
@@ -41,5 +42,18 @@ response = Net::HTTP.start(uri.hostname, uri.port) do |http|
   http.request(request)
 end
 
-puts response.body
-# puts "Access token: #{response.body['access_token']}"
+parsed_response = JSON.parse(response.body)
+
+puts <<~TEXT
+
+  Access token:
+  #{parsed_response['access_token']}
+
+  Refresh token:
+  #{parsed_response['refresh_token']}
+
+  Token type: #{parsed_response['token_type']}
+  Expires in: #{parsed_response['expires_in']}
+
+  #{response.body}
+TEXT
