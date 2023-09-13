@@ -14,8 +14,8 @@ class OAuthTokenEncoderService < ApplicationService
 
   # rubocop:disable Metrics/AbcSize
   def call
-    raise OAuth::ServerError, invalid_param_message(:client_id) unless valid_client_id?
-    raise OAuth::ServerError, invalid_param_message(:expiration) unless valid_expiration?
+    raise OAuth::InvalidTokenParamError, invalid_param_message(:client_id) unless valid_client_id?
+    raise OAuth::InvalidTokenParamError, invalid_param_message(:expiration) unless valid_expiration?
 
     payload = {
       aud: oauth_config.audience_url,

@@ -32,6 +32,10 @@ module OAuth
   class InvalidRequestError < StandardError; end
 
   ##
+  # Error for when ivalid token params are provided.
+  class InvalidTokenParamError < StandardError; end
+
+  ##
   # Error for when server experiences an error.
   class ServerError < StandardError; end
 

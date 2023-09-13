@@ -17,7 +17,8 @@ RSpec.describe OAuthTokenEncoderService do # rubocop:disable RSpec/FilePath
 
       it 'raises an OAuth::ServerError' do
         expect { service_call }.to raise_error(
-          OAuth::ServerError, I18n.t('services.oauth_token_encoder_service.invalid_client_id', value: client_id)
+          OAuth::InvalidTokenParamError,
+          I18n.t('services.oauth_token_encoder_service.invalid_client_id', value: client_id)
         )
       end
     end
@@ -27,7 +28,8 @@ RSpec.describe OAuthTokenEncoderService do # rubocop:disable RSpec/FilePath
 
       it 'raises an OAuth::ServerError' do
         expect { service_call }.to raise_error(
-          OAuth::ServerError, I18n.t('services.oauth_token_encoder_service.invalid_expiration', value: expiration)
+          OAuth::InvalidTokenParamError,
+          I18n.t('services.oauth_token_encoder_service.invalid_expiration', value: expiration)
         )
       end
     end
