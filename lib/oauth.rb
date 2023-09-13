@@ -34,4 +34,16 @@ module OAuth
   ##
   # Error for when server experiences an error.
   class ServerError < StandardError; end
+
+  ##
+  # Error for when an authorization header is not provided.
+  class MissingAuthorizationHeaderError < StandardError; end
+
+  ##
+  # Error for when an invalid access token is provided.
+  class InvalidAccessTokenError < StandardError; end
+
+  ##
+  # Error for when an unauthorized access token is provided.
+  class UnauthorizedAccessTokenError < StandardError; end
 end

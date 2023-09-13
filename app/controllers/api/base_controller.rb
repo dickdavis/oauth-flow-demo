@@ -1,0 +1,42 @@
+# frozen_string_literal: true
+
+module API
+  ##
+  # Base API controller.
+  class BaseController < ActionController::API
+    rescue_from OAuth::MissingAuthorizationHeaderError, with: :missing_auth_header_response
+    rescue_from OAuth::InvalidAccessTokenError, with: :invalid_token_response
+    rescue_from OAuth::UnauthorizedAccessTokenError, with: :unauthorized_token_response
+
+    private
+
+    def user_from_token
+      bearer_token_header = request.headers['AUTHORIZATION']
+      raise OAuth::MissingAuthorizationHeaderError if bearer_token_header.blank?
+
+      token = bearer_token_header.delete_prefix('Bearer ')
+      access_token = AccessToken.new(JsonWebToken.decode(token))
+      raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
+
+      User.find(access_token.user_id)
+    rescue JWT::DecodeError
+      raise OAuth::InvalidAccessTokenError
+    end
+
+    def missing_auth_header_response
+      error_response(I18n.t('api.errors.missing_auth_header_response'))
+    end
+
+    def invalid_token_response
+      error_response(I18n.t('api.errors.invalid_token_response'))
+    end
+
+    def unauthorized_token_response
+      error_response(I18n.t('api.errors.unauthorized_token_response'))
+    end
+
+    def error_response(error)
+      render json: { error: }, status: :unauthorized
+    end
+  end
+end

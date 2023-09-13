@@ -1,0 +1,6 @@
+en:
+  api:
+    errors:
+      missing_auth_header_response: 'A valid access token must be provided in the AUTHORIZATION header of the request.'
+      invalid_token_response: 'An invalid access token was provided.'
+      unauthorized_token_response: 'An unauthorized access token was provided.'

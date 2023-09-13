@@ -11,6 +11,8 @@ directories:
       enabled: false
     InstanceVariableAssumption:
       enabled: false
+    UncommunicativeModuleName:
+      enabled: false
   "app/helpers":
     IrresponsibleModule:
       enabled: false
@@ -45,6 +47,7 @@ detectors:
   TooManyStatements:
     exclude:
       - OAuthController#authorize
+      - OAuthController#token
       - ClientRedirectUrlService#call
       - StateTokenEncoderService#initialize
       - AuthorizationGrantsController#create
