@@ -25,6 +25,8 @@ directories:
   "app/models":
     InstanceVariableAssumption:
       enabled: false
+    Attribute:
+      enabled: false
   "app/services":
     UtilityFunction:
       enabled: false
@@ -55,3 +57,6 @@ detectors:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
       - AuthorizationGrantsController#create
+  DuplicateMethodCall:
+    exclude:
+      - AccessToken#valid_exp?
