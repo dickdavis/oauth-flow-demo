@@ -18,7 +18,7 @@ puts <<~TEXT
   Enter the URL into your browser, enter the client id and secret when prompted, and then enter login credentials for the resource owner.
   NOTE: An actual client would send the client id and secret via HTTP Basic authentication in the headers.
 
-  http://localhost:3000/authorize?&client_id=#{client_id}&response_type=code&code_challenge=#{code_challenge}&code_challenge_method=S256
+  http://localhost:3000/oauth/authorize?&client_id=#{client_id}&response_type=code&code_challenge=#{code_challenge}&code_challenge_method=S256
 
   The client used by this test script has the following credentials:
   client_id: #{client_id}
@@ -29,7 +29,7 @@ TEXT
 puts 'Authorization code? -> '
 authorization_code = gets.chomp
 
-uri = URI.parse('http://localhost:3000/token')
+uri = URI.parse('http://localhost:3000/oauth/token')
 request = Net::HTTP::Post.new(uri)
 request.basic_auth(client_id, client_secret)
 request.set_form_data(

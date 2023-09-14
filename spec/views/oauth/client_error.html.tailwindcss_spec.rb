@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'oauth/client_error' do
   before do
-    render template: 'oauth/client_error', locals: { error_class: 'foo', message: 'bar' }
+    render template: 'oauth/client_error', locals: { error_class: 'foo', error_message: 'bar' }
   end
 
   it 'renders the title' do
