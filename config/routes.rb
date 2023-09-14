@@ -7,8 +7,10 @@ Rails.application.routes.draw do
   post 'sign-in', to: 'sessions#create'
   delete 'sign-out', to: 'sessions#destroy', as: :sign_out
 
-  get 'authorize', to: 'oauth#authorize'
-  post 'token', to: 'oauth#token'
+  namespace :oauth do
+    get 'authorize', to: 'authorizations#authorize'
+    post 'token', to: 'sessions#token'
+  end
 
   resources :authorization_grants, path: 'authorization-grants', only: %i[new create]
 

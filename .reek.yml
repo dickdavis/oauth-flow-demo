@@ -46,8 +46,7 @@ detectors:
       - StateTokenEncoderService
   TooManyStatements:
     exclude:
-      - OAuthController#authorize
-      - OAuthController#token
+      - OAuth::AuthorizationsController#authorize
       - ClientRedirectUrlService#call
       - StateTokenEncoderService#initialize
       - AuthorizationGrant#create_oauth_session
