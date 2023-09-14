@@ -50,6 +50,7 @@ detectors:
       - OAuthController#token
       - ClientRedirectUrlService#call
       - StateTokenEncoderService#initialize
+      - AuthorizationGrant#create_oauth_session
       - AuthorizationGrantsController#create
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
