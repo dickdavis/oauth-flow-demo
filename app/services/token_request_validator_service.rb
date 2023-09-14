@@ -12,14 +12,14 @@ class TokenRequestValidatorService < ApplicationService
 
   def call
     call!
-  rescue OAuth::UnsupportedGrantTypeError, OAuth::InvalidGrantError, OAuth::InvalidRequestError
+  rescue OAuth::UnsupportedGrantTypeError, OAuth::InvalidGrantError, OAuth::InvalidTokenRequestError
     false
   end
 
   def call!
     raise OAuth::UnsupportedGrantTypeError if invalid_grant_type?
     raise OAuth::InvalidGrantError if invalid_authorization_grant?
-    raise OAuth::InvalidRequestError if invalid_code_verifier?
+    raise OAuth::InvalidTokenRequestError if invalid_code_verifier?
 
     true
   end
