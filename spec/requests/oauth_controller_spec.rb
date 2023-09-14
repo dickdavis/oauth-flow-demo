@@ -219,23 +219,8 @@ RSpec.describe OAuthController do
     end
 
     context 'when the token request validator service does not raise an error' do
-      it 'calls the oauth token encoder service to create both the access and refresh tokens' do
-        call_endpoint
-        expect(OAuthTokenEncoderService).to have_received(:new).exactly(2).times
-      end
-
       it 'creates an OAuthSession record' do
         expect { call_endpoint }.to change(OAuthSession, :count).by(1)
-      end
-
-      it 'saves the access_token_jti in the OAuthSession' do
-        call_endpoint
-        expect(OAuthSession.last.access_token_jti).to eq(access_token_results.jti)
-      end
-
-      it 'saves the refresh_token_jti in the OAuthSession' do
-        call_endpoint
-        expect(OAuthSession.last.refresh_token_jti).to eq(refresh_token_results.jti)
       end
 
       it 'responds with HTTP status ok' do
@@ -255,9 +240,12 @@ RSpec.describe OAuthController do
         )
       end
 
-      context 'when the oauth token encoder service raises the invalid request error' do
+      context 'when oauth token creation raises the server error' do
+        let(:authorization_grant_spy) { instance_spy(AuthorizationGrant) }
+
         before do
-          allow(oauth_token_encoder_service).to receive(:call).and_raise(OAuth::ServerError, 'foobar')
+          allow(AuthorizationGrant).to receive(:find_by).and_return(authorization_grant_spy)
+          allow(authorization_grant_spy).to receive(:create_oauth_session).and_raise(OAuth::ServerError, 'foobar')
         end
 
         it 'responds with HTTP status internal_server_error' do

@@ -42,27 +42,9 @@ class OAuthController < ApplicationController
       authorization_grant:, code_verifier: params[:code_verifier], grant_type: params[:grant_type]
     )
 
-    client_id = authorization_grant.client_id
-    access_token_expiration = oauth_config.access_token_expiration.minutes.from_now
-    access_token_jti, access_token = OAuthTokenEncoderService.call(
-      client_id:,
-      expiration: access_token_expiration,
-      optional_claims: { user_id: authorization_grant.user_id }
-    ).deconstruct
+    access_token, refresh_token, expiration = authorization_grant.create_oauth_session.deconstruct
 
-    refresh_token_jti, refresh_token = OAuthTokenEncoderService.call(
-      client_id:,
-      expiration: oauth_config.refresh_token_expiration.minutes.from_now
-    ).deconstruct
-
-    oauth_session = OAuthSession.new(access_token_jti:, refresh_token_jti:, authorization_grant:)
-    if oauth_session.save
-      authorization_grant.update(redeemed: true)
-      render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: access_token_expiration.to_i }
-    else
-      errors = oauth_session.errors.full_messages.join(', ')
-      raise OAuth::ServerError, I18n.t('oauth.server_error.oauth_session_failure', errors:)
-    end
+    render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
   rescue OAuth::UnsupportedGrantTypeError
     render_token_request_error(error: 'unsupported_grant_type')
   rescue OAuth::InvalidGrantError
@@ -73,7 +55,6 @@ class OAuthController < ApplicationController
     Rails.logger.error(error.message)
     render_token_request_error(error: 'server_error', status: :internal_server_error)
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   private
 
