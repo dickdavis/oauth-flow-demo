@@ -49,12 +49,13 @@ class OAuthController < ApplicationController
     render_token_request_error(error: 'unsupported_grant_type')
   rescue OAuth::InvalidGrantError
     render_token_request_error(error: 'invalid_grant')
-  rescue OAuth::InvalidRequestError
+  rescue OAuth::InvalidTokenRequestError
     render_token_request_error(error: 'invalid_request')
   rescue OAuth::ServerError => error
     Rails.logger.error(error.message)
     render_token_request_error(error: 'server_error', status: :internal_server_error)
   end
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
   private
 

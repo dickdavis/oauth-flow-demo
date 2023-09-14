@@ -204,7 +204,7 @@ RSpec.describe OAuthController do
 
     context 'when the token request validator services raises the invalid request error' do
       before do
-        allow(token_request_validator_service).to receive(:call!).and_raise(OAuth::InvalidRequestError)
+        allow(token_request_validator_service).to receive(:call!).and_raise(OAuth::InvalidTokenRequestError)
       end
 
       it 'responds with HTTP status bad request' do

@@ -29,7 +29,7 @@ module OAuth
 
   ##
   # Error for when client provides a param that fails validation.
-  class InvalidRequestError < StandardError; end
+  class InvalidTokenRequestError < StandardError; end
 
   ##
   # Error for when ivalid token params are provided.

@@ -79,8 +79,8 @@ RSpec.describe TokenRequestValidatorService do
     context 'when the code verifier does not match the code challenge for the authorization grant' do
       let(:code_verifier) { 'foobar' }
 
-      it 'raises an OAuth::InvalidRequestError' do
-        expect { service_call }.to raise_error(OAuth::InvalidRequestError)
+      it 'raises an OAuth::InvalidTokenRequestError' do
+        expect { service_call }.to raise_error(OAuth::InvalidTokenRequestError)
       end
     end
 
