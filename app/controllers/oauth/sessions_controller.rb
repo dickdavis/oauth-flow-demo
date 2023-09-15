@@ -34,6 +34,8 @@ module OAuth
       render_token_request_error(error: 'invalid_grant')
     end
 
+    def refresh; end
+
     private
 
     def validate_grant_type
