@@ -12,7 +12,6 @@ RSpec.shared_examples 'a model that validates token claims' do
     it { is_expected.not_to allow_value('http://foo.bar/').for(:iss) }
 
     it { is_expected.to validate_presence_of(:jti) }
-    it { is_expected.not_to allow_value('does-not-map-to-oauth-session').for(:jti) }
 
     it 'does not add any errors if all provided claims are valid' do
       expect(model).to be_valid

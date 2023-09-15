@@ -28,11 +28,31 @@ RSpec.shared_examples 'an endpoint that requires token authentication' do
     let(:authorization_grant) { create(:authorization_grant, user:) }
 
     before do
-      _, token = OAuthTokenEncoderService.call(
+      token = OAuthTokenEncoderService.call(
         client_id: 'democlient',
         expiration: 5.minutes.ago,
         optional_claims: { user_id: user.id, jti: oauth_session.access_token_jti }
-      ).deconstruct
+      ).token
+      shared_context_headers['AUTHORIZATION'] = token
+    end
+
+    it 'responds with HTTP status unauthorized' do
+      call_endpoint
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  context 'with an access token with a user claim that does not match the oauth session' do
+    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+    let(:authorization_grant) { create(:authorization_grant, user:) }
+    let(:other_user) { create(:user) }
+
+    before do
+      token = OAuthTokenEncoderService.call(
+        client_id: 'democlient',
+        expiration: 5.minutes.ago,
+        optional_claims: { user_id: other_user.id, jti: oauth_session.access_token_jti }
+      ).token
       shared_context_headers['AUTHORIZATION'] = token
     end
 

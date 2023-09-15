@@ -17,9 +17,6 @@ module ClaimValidatable
     attr_accessor :aud, :exp, :iat, :iss, :jti
 
     validates :jti, presence: true
-    validate do
-      errors.add(:jti, 'Invalid `jti` claim provided') unless oauth_session&.created_status?
-    end
 
     validates :aud, presence: true, format: { with: /\A#{OAUTH_CONFIG.audience_url}*/ }
 
