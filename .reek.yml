@@ -64,3 +64,4 @@ detectors:
   DuplicateMethodCall:
     exclude:
       - AccessToken#valid_exp?
+      - API::BaseController#user_from_token
