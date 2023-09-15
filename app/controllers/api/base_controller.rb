@@ -10,6 +10,7 @@ module API
 
     private
 
+    # rubocop:disable Metrics/AbcSize
     def user_from_token
       bearer_token_header = request.headers['AUTHORIZATION']
       raise OAuth::MissingAuthorizationHeaderError if bearer_token_header.blank?
@@ -18,10 +19,14 @@ module API
       access_token = AccessToken.new(JsonWebToken.decode(token))
       raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
 
+      oauth_session = OAuthSession.find_by(access_token_jti: access_token.jti)
+      raise OAuth::UnauthorizedAccessTokenError unless oauth_session.created_status?
+
       User.find(access_token.user_id)
     rescue JWT::DecodeError
       raise OAuth::InvalidAccessTokenError
     end
+    # rubocop:enable Metrics/AbcSize
 
     def missing_auth_header_response
       error_response(I18n.t('api.errors.missing_auth_header_response'))
