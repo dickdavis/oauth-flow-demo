@@ -14,6 +14,10 @@ module OAuth
       render_token_request_error(error: 'unsupported_grant_type')
     end
 
+    rescue_from OAuth::InvalidGrantError do
+      render_token_request_error(error: 'invalid_grant')
+    end
+
     rescue_from OAuth::ServerError do |error|
       Rails.logger.error(error.message)
       render_token_request_error(error: 'server_error', status: :internal_server_error)
@@ -30,11 +34,21 @@ module OAuth
       render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
     rescue OAuth::InvalidCodeVerifierError
       render_token_request_error(error: 'invalid_request')
-    rescue OAuth::InvalidGrantError
-      render_token_request_error(error: 'invalid_grant')
     end
 
-    def refresh; end
+    def refresh
+      token = RefreshToken.new(JsonWebToken.decode(params[:refresh_token]))
+      oauth_session = OAuthSession.find_by(refresh_token_jti: token.jti)
+
+      access_token, refresh_token, expiration = oauth_session.refresh(token:).deconstruct
+
+      render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
+    rescue JWT::DecodeError
+      render_token_request_error(error: 'invalid_request')
+    rescue OAuth::RevokedSessionError => error
+      Rails.logger.warn(error.message)
+      render_token_request_error(error: 'invalid_request')
+    end
 
     private
 
