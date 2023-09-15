@@ -3,6 +3,8 @@
 ##
 # Models an authorization grant.
 class AuthorizationGrant < ApplicationRecord
+  include OAuthSessionCreatable
+
   VALID_CODE_CHALLENGE_METHODS = %w[S256].freeze
 
   belongs_to :user
@@ -18,35 +20,17 @@ class AuthorizationGrant < ApplicationRecord
 
   validate :client_configuration
 
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-  def create_oauth_session
-    access_token_expiration = oauth_config.access_token_expiration.minutes.from_now
+  def active_oauth_session
+    oauth_sessions.created_status.order(created_at: :desc).first
+  end
 
-    access_token_jti, access_token = OAuthTokenEncoderService.call(
-      client_id:,
-      expiration: access_token_expiration,
-      optional_claims: { user_id: }
-    ).deconstruct
-
-    refresh_token_jti, refresh_token = OAuthTokenEncoderService.call(
-      client_id:,
-      expiration: oauth_config.refresh_token_expiration.minutes.from_now
-    ).deconstruct
-
-    oauth_session = oauth_sessions.new(access_token_jti:, refresh_token_jti:)
-    if oauth_session.save
+  def redeem
+    create_oauth_session(authorization_grant: self) do
       update(redeemed: true) unless redeemed?
-      Data
-        .define(:access_token, :refresh_token, :expiration)
-        .new(access_token, refresh_token, access_token_expiration.to_i)
-    else
-      errors = oauth_session.errors.full_messages.join(', ')
-      raise OAuth::ServerError, I18n.t('oauth.server_error.oauth_session_failure', errors:)
     end
-  rescue OAuth::InvalidTokenParamError => error
+  rescue OAuth::ServerError => error
     raise OAuth::ServerError, error.message
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   private
 

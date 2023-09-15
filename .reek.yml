@@ -48,9 +48,9 @@ detectors:
     exclude:
       - ClientRedirectUrlService#call
       - API::BaseController#user_from_token
-      - AuthorizationGrant#create_oauth_session
       - AuthorizationGrantsController#create
       - OAuth::AuthorizationsController#authorize
+      - OAuthSessionCreatable#create_oauth_session
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
       - StateTokenEncoderService#initialize

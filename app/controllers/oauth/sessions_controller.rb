@@ -29,7 +29,7 @@ module OAuth
         authorization_grant:, code_verifier: params[:code_verifier], grant_type: params[:grant_type]
       )
 
-      access_token, refresh_token, expiration = authorization_grant.create_oauth_session.deconstruct
+      access_token, refresh_token, expiration = authorization_grant.redeem.deconstruct
 
       render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
     end

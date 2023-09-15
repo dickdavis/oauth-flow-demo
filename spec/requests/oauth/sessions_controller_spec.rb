@@ -111,7 +111,7 @@ RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
 
         before do
           allow(AuthorizationGrant).to receive(:find_by).and_return(authorization_grant_spy)
-          allow(authorization_grant_spy).to receive(:create_oauth_session).and_raise(OAuth::ServerError, 'foobar')
+          allow(authorization_grant_spy).to receive(:redeem).and_raise(OAuth::ServerError, 'foobar')
         end
 
         it 'responds with HTTP status internal_server_error' do
