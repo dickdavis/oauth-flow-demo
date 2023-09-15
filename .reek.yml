@@ -46,20 +46,21 @@ detectors:
       - StateTokenEncoderService
   TooManyStatements:
     exclude:
-      - OAuth::AuthorizationsController#authorize
       - ClientRedirectUrlService#call
-      - StateTokenEncoderService#initialize
+      - API::BaseController#user_from_token
       - AuthorizationGrant#create_oauth_session
       - AuthorizationGrantsController#create
+      - OAuth::AuthorizationsController#authorize
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
+      - StateTokenEncoderService#initialize
   ControlParameter:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
   FeatureEnvy:
     exclude:
-      - ClientAuthentication#http_basic_auth_successful?
       - AuthorizationGrantsController#create
+      - ClientAuthentication#http_basic_auth_successful?
   DuplicateMethodCall:
     exclude:
       - AccessToken#valid_exp?
