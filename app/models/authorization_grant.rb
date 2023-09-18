@@ -24,7 +24,9 @@ class AuthorizationGrant < ApplicationRecord
     oauth_sessions.created_status.order(created_at: :desc).first
   end
 
-  def redeem
+  def redeem(code_verifier:)
+    raise OAuth::InvalidCodeVerifierError unless valid_code_verifier?(code_verifier:)
+
     create_oauth_session(authorization_grant: self) do
       update(redeemed: true) unless redeemed?
     end
@@ -51,5 +53,10 @@ class AuthorizationGrant < ApplicationRecord
     return unless client_config[:redirection_uri] != client_redirection_uri
 
     errors.add(:client_redirection_uri, 'Provided client_redirection_uri does not map to a configured client')
+  end
+
+  def valid_code_verifier?(code_verifier:)
+    challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier), padding: false)
+    code_challenge == challenge
   end
 end

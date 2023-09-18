@@ -70,9 +70,10 @@ RSpec.describe AuthorizationGrant do
   end
 
   describe '#redeem' do
-    subject(:method_call) { authorization_grant.redeem }
+    subject(:method_call) { authorization_grant.redeem(code_verifier:) }
 
     let(:authorization_grant) { create(:authorization_grant) }
+    let(:code_verifier) { 'code_verifier' }
 
     it_behaves_like 'a model that creates OAuth sessions'
 
@@ -87,6 +88,14 @@ RSpec.describe AuthorizationGrant do
 
       it 'does not update the redeemed attribute' do
         expect { method_call }.not_to change(authorization_grant, :redeemed)
+      end
+    end
+
+    context 'when the code verifier does not match the code challenge for the authorization grant' do
+      let(:code_verifier) { 'foobar' }
+
+      it 'raises an OAuth::InvalidCodeVerifierError' do
+        expect { method_call }.to raise_error(OAuth::InvalidCodeVerifierError)
       end
     end
   end
