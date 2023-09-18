@@ -50,6 +50,7 @@ detectors:
       - API::BaseController#user_from_token
       - AuthorizationGrantsController#create
       - OAuth::AuthorizationsController#authorize
+      - OAuth::SessionsController#token
       - OAuthSessionCreatable#create_oauth_session
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect

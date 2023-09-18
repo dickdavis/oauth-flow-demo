@@ -28,8 +28,8 @@ module OAuth
   class InvalidGrantError < StandardError; end
 
   ##
-  # Error for when client provides a param that fails validation.
-  class InvalidTokenRequestError < StandardError; end
+  # Error for when client provides a code verifier that fails validation.
+  class InvalidCodeVerifierError < StandardError; end
 
   ##
   # Error for when ivalid token params are provided.
