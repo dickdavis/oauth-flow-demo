@@ -1,0 +1,61 @@
+{
+	"info": {
+		"_postman_id": "7cfd2953-e151-4ed1-b76b-5896afbc72a9",
+		"name": "OAuth Flow Demo API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "666655",
+		"_collection_link": "https://www.postman.com/dick-davis/workspace/oauth-flow-demo/collection/666655-7cfd2953-e151-4ed1-b76b-5896afbc72a9?action=share&source=collection_link&creator=666655"
+	},
+	"item": [
+		{
+			"name": "/api/v1/users/current",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/users/current",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"current"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearer_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
