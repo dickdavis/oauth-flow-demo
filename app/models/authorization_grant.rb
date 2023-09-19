@@ -14,7 +14,6 @@ class AuthorizationGrant < ApplicationRecord
 
   validates :code_challenge, presence: true
   validates :code_challenge_method, presence: true, inclusion: { in: VALID_CODE_CHALLENGE_METHODS }
-  validates :expires_at, comparison: { less_than: 10.minutes.from_now }
   validates :client_id, presence: true
   validates :client_redirection_uri, presence: true
 

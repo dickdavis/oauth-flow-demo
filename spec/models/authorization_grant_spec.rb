@@ -10,8 +10,6 @@ RSpec.describe AuthorizationGrant do
     it { is_expected.to validate_presence_of(:code_challenge_method) }
     it { is_expected.to validate_presence_of(:client_id) }
     it { is_expected.to validate_presence_of(:client_redirection_uri) }
-    it { is_expected.to allow_value(5.minutes.from_now).for(:expires_at) }
-    it { is_expected.not_to allow_value(10.minutes.from_now).for(:expires_at) }
 
     it 'adds an error if client_id is not configured' do
       model.client_id = 'invalidclient'
