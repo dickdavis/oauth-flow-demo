@@ -52,6 +52,7 @@ detectors:
       - OAuth::AuthorizationsController#authorize
       - OAuth::SessionsController#token
       - OAuthSessionCreatable#create_oauth_session
+      - OAuthSession#refresh
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
       - StateTokenEncoderService#initialize

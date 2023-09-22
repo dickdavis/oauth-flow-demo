@@ -50,4 +50,22 @@ module OAuth
   ##
   # Error for when an unauthorized access token is provided.
   class UnauthorizedAccessTokenError < StandardError; end
+
+  ##
+  # Error for when an OAuthSession is revoked.
+  class RevokedSessionError < StandardError
+    attr_reader :client_id, :refreshed_session_id, :revoked_session_id, :user_id
+
+    def initialize(client_id:, refreshed_session_id:, revoked_session_id:, user_id:)
+      super()
+      @client_id = client_id
+      @refreshed_session_id = refreshed_session_id
+      @revoked_session_id = revoked_session_id
+      @user_id = user_id
+    end
+
+    def message
+      I18n.t('oauth.revoked_session_error', client_id:, refreshed_session_id:, revoked_session_id:, user_id:)
+    end
+  end
 end

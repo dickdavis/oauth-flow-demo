@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+##
+# Provides a route constraint for when the grant type is 'refresh_token'
+GrantTypeConstraint = Struct.new(:grant_type) do
+  def matches?(request)
+    request.request_parameters['grant_type'] == grant_type
+  end
+end
+
 Rails.application.routes.draw do
   resources :users, only: %i[new create]
 
@@ -9,6 +17,7 @@ Rails.application.routes.draw do
 
   namespace :oauth do
     get 'authorize', to: 'authorizations#authorize'
+    post 'token', to: 'sessions#refresh', constraints: GrantTypeConstraint.new('refresh_token'), as: :refresh
     post 'token', to: 'sessions#token'
   end
 

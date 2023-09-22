@@ -5,3 +5,5 @@ en:
       lede: 'The request provided by the client to this server is malformed. Please report this error through the client support channel.'
     server_error:
       oauth_session_failure: 'Failed to create OAuthSession. Errors: %{errors}'
+    mismatched_refresh_token_error: 'The provided refresh token JTI does not match the refresh token JTI of the target OAuthSession.'
+    revoked_session_error: 'Refresh token replay attack detected. Refreshed OAuthSession: %{refreshed_session_id}, Revoked OAuthSession: %{revoked_session_id}, Client ID: %{client_id}, User ID: %{user_id}'
