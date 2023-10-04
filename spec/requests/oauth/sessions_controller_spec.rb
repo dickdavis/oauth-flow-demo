@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
+RSpec.describe OAuth::SessionsController do
   describe 'POST /token (grant_type="authorization_code")' do
     let(:headers) { {} }
     let(:params) { { code:, code_verifier:, grant_type: } }

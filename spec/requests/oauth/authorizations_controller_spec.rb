@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe OAuth::AuthorizationsController do # rubocop:disable RSpec/FilePath
+RSpec.describe OAuth::AuthorizationsController do
   describe 'GET /authorize' do
     let(:headers) { {} }
     let(:params) { { client_id:, state:, code_challenge:, code_challenge_method:, response_type: } }
@@ -86,7 +86,7 @@ RSpec.describe OAuth::AuthorizationsController do # rubocop:disable RSpec/FilePa
 
       it 'redirects the user to the authorization grant page' do
         call_endpoint
-        expect(response).to redirect_to(new_authorization_grant_path(state: body))
+        expect(response).to redirect_to(new_oauth_authorization_grant_path(state: body))
       end
     end
   end
