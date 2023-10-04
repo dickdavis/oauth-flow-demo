@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
-  describe 'POST /token' do
+  describe 'POST /token (grant_type="authorization_code")' do
     let(:headers) { {} }
     let(:params) { { code:, code_verifier:, grant_type: } }
     let(:grant_type) { 'authorization_code' }
@@ -21,23 +21,9 @@ RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
       allow(oauth_token_encoder_service).to receive(:call).and_return(access_token_results, refresh_token_results)
     end
 
-    include_context 'with an authenticated client', :post, :oauth_token_path
+    include_context 'with an authenticated client', :post, :oauth_create_session_path
 
     it_behaves_like 'an endpoint that requires client authentication'
-
-    context 'when the client provides an unsupported grant type' do
-      let(:grant_type) { 'foobar' }
-
-      it 'responds with HTTP status bad request' do
-        call_endpoint
-        expect(response).to have_http_status(:bad_request)
-      end
-
-      it 'responds with error unsupported_grant_type as JSON' do
-        call_endpoint
-        expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
-      end
-    end
 
     context 'when the authorization grant is not found' do
       let(:code) { 'foobar' }
@@ -142,7 +128,7 @@ RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
       allow(oauth_token_encoder_service).to receive(:call).and_return(access_token_results, refresh_token_results)
     end
 
-    include_context 'with an authenticated client', :post, :oauth_refresh_path
+    include_context 'with an authenticated client', :post, :oauth_refresh_session_path
 
     it_behaves_like 'an endpoint that requires client authentication'
 
@@ -157,20 +143,6 @@ RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
       it 'responds with error unsupported_grant_type as JSON' do
         call_endpoint
         expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-      end
-    end
-
-    context 'when the client provides an unsupported grant type' do
-      let(:grant_type) { 'foobar' }
-
-      it 'responds with HTTP status bad request' do
-        call_endpoint
-        expect(response).to have_http_status(:bad_request)
-      end
-
-      it 'responds with error unsupported_grant_type as JSON' do
-        call_endpoint
-        expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
       end
     end
 
@@ -272,6 +244,30 @@ RSpec.describe OAuth::SessionsController do # rubocop:disable RSpec/FilePath
           expect(response.parsed_body).to eq({ 'error' => 'server_error' })
         end
       end
+    end
+  end
+
+  describe 'POST /token (grant_type={ NOT `authorization_code` or `refresh_token` })' do
+    let(:headers) { {} }
+    let(:params) { { code:, code_verifier:, grant_type: } }
+    let(:grant_type) { 'foobar' }
+    let(:code_verifier) { 'code_verifier' }
+    let(:code) { authorization_grant.id }
+    let(:authorization_grant) { create(:authorization_grant, user:) }
+    let(:user) { create(:user) }
+
+    include_context 'with an authenticated client', :post, :oauth_unsupported_grant_type_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'responds with HTTP status bad request' do
+      call_endpoint
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it 'responds with error unsupported_grant_type as JSON' do
+      call_endpoint
+      expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
     end
   end
 end

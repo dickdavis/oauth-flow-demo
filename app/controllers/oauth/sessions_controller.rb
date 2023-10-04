@@ -8,12 +8,6 @@ module OAuth
 
     skip_before_action :verify_authenticity_token
 
-    before_action :validate_grant_type
-
-    rescue_from OAuth::UnsupportedGrantTypeError do
-      render_token_request_error(error: 'unsupported_grant_type')
-    end
-
     rescue_from OAuth::InvalidGrantError do
       render_token_request_error(error: 'invalid_grant')
     end
@@ -50,11 +44,11 @@ module OAuth
       render_token_request_error(error: 'invalid_request')
     end
 
-    private
-
-    def validate_grant_type
-      raise OAuth::UnsupportedGrantTypeError unless PERMITTED_GRANT_TYPES.include?(params[:grant_type])
+    def unsupported_grant_type
+      render_token_request_error(error: 'unsupported_grant_type')
     end
+
+    private
 
     def render_token_request_error(error:, status: :bad_request)
       render json: { error: }, status:
