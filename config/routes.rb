@@ -18,6 +18,8 @@ Rails.application.routes.draw do
   namespace :oauth do
     get 'authorize', to: 'authorizations#authorize'
 
+    resources :authorization_grants, path: 'authorization-grants', only: %i[new create]
+
     constraints(GrantTypeConstraint.new('refresh_token')) do
       post 'token', to: 'sessions#refresh', as: :refresh_session
     end
@@ -28,8 +30,6 @@ Rails.application.routes.draw do
 
     post 'token', to: 'sessions#unsupported_grant_type', as: :unsupported_grant_type
   end
-
-  resources :authorization_grants, path: 'authorization-grants', only: %i[new create]
 
   namespace :api, format: :json do
     namespace :v1 do

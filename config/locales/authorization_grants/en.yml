@@ -1,7 +1,0 @@
-en:
-  authorization_grants:
-    new:
-      title: 'Authorize this Client'
-      lede: 'Confirm that you wish to grant access to this client.'
-      approve_cta: 'Approve'
-      reject_cta: 'Reject'

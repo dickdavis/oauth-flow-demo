@@ -1,5 +1,11 @@
 en:
   oauth:
+    authorization_grants:
+      new:
+        title: 'Authorize this Client'
+        lede: 'Confirm that you wish to grant access to this client.'
+        approve_cta: 'Approve'
+        reject_cta: 'Reject'
     client_error:
       title: 'Client Error'
       lede: 'The request provided by the client to this server is malformed. Please report this error through the client support channel.'

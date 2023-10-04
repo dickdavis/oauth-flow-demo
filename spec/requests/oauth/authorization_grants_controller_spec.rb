@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-RSpec.describe AuthorizationGrantsController do
+RSpec.describe OAuth::AuthorizationGrantsController do
   describe 'GET /new' do
-    subject(:call_endpoint) { get new_authorization_grant_path, params: { state: } }
+    subject(:call_endpoint) { get new_oauth_authorization_grant_path, params: { state: } }
 
     let(:user) { create(:user) }
     let(:state) { JsonWebToken.encode({ client_id: 'democlient' }) }
@@ -22,7 +22,7 @@ RSpec.describe AuthorizationGrantsController do
   end
 
   describe 'POST /create' do
-    subject(:call_endpoint) { post authorization_grants_path, params: { state:, approve: } }
+    subject(:call_endpoint) { post oauth_authorization_grants_path, params: { state:, approve: } }
 
     let(:user) { create(:user) }
     let(:approve) { 'true' }

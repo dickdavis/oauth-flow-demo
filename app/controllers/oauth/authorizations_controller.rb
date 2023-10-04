@@ -24,7 +24,7 @@ module OAuth
 
       case status
       when :ok
-        redirect_to new_authorization_grant_path(state: body)
+        redirect_to new_oauth_authorization_grant_path(state: body)
       when :invalid_request
         result = ClientRedirectUrlService.call(
           client_id:,

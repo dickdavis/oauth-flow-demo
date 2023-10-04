@@ -86,7 +86,7 @@ RSpec.describe OAuth::AuthorizationsController do
 
       it 'redirects the user to the authorization grant page' do
         call_endpoint
-        expect(response).to redirect_to(new_authorization_grant_path(state: body))
+        expect(response).to redirect_to(new_oauth_authorization_grant_path(state: body))
       end
     end
   end
