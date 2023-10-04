@@ -9,6 +9,9 @@ AllCops:
   TargetRubyVersion: 3.2
 Naming/RescuedExceptionsVariableName:
   Enabled: false
+Metrics/BlockLength:
+  Exclude:
+    - 'config/routes.rb'
 RSpec/ExampleLength:
   Max: 10
   Exclude:

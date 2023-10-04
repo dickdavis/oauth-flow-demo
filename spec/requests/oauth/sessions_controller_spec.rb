@@ -270,4 +270,49 @@ RSpec.describe OAuth::SessionsController do
       expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
     end
   end
+
+  describe 'POST /revoke (token_type_hint={ NOT `access_token` or `refresh_token` })' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'foobar' } }
+    let(:token) { 'abc123' }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'responds with HTTP status no content' do
+      call_endpoint
+      expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe 'POST /revoke (token_type_hint=access_token)' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'access_token' } }
+    let(:token) { 'abc123' }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_access_token_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'responds with HTTP status no content' do
+      call_endpoint
+      expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe 'POST /revoke (token_type_hint=refresh_token})' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'refresh_token' } }
+    let(:token) { 'abc123' }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_refresh_token_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'responds with HTTP status no content' do
+      call_endpoint
+      expect(response).to have_http_status(:no_content)
+    end
+  end
 end

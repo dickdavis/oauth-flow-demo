@@ -48,6 +48,12 @@ module OAuth
       render_token_request_error(error: 'unsupported_grant_type')
     end
 
+    def revoke; end
+
+    def revoke_access_token; end
+
+    def revoke_refresh_token; end
+
     private
 
     def render_token_request_error(error:, status: :bad_request)
