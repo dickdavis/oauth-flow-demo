@@ -50,4 +50,35 @@ class OAuthSession < ApplicationRecord
     raise OAuth::ServerError, error.message
   end
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+  def revoke_self_and_active_session
+    ActiveRecord::Base.transaction do
+      update(status: 'revoked')
+      authorization_grant.active_oauth_session&.update(status: 'revoked')
+    end
+  end
+
+  def self.revoke_for_token(jti:)
+    # Must use find_by in this manner due to AR encryption
+    oauth_session = find_by(access_token_jti: jti) || find_by(refresh_token_jti: jti)
+    execute_revocation(oauth_session:)
+  end
+
+  def self.revoke_for_access_token(access_token_jti:)
+    oauth_session = find_by(access_token_jti:)
+    execute_revocation(oauth_session:)
+  end
+
+  def self.revoke_for_refresh_token(refresh_token_jti:)
+    oauth_session = find_by(refresh_token_jti:)
+    execute_revocation(oauth_session:)
+  end
+
+  class << self
+    def execute_revocation(oauth_session:)
+      return if oauth_session.blank?
+
+      oauth_session.revoke_self_and_active_session
+    end
+  end
 end
