@@ -48,10 +48,41 @@ module OAuth
       render_token_request_error(error: 'unsupported_grant_type')
     end
 
+    def revoke
+      token = JsonWebToken.decode(params[:token])
+      OAuthSession.revoke_for_token(jti: token[:jti])
+
+      head :ok
+    rescue JWT::DecodeError
+      render_unsupported_token_type_error
+    end
+
+    def revoke_access_token
+      token = AccessToken.new(JsonWebToken.decode(params[:token]))
+      OAuthSession.revoke_for_access_token(access_token_jti: token.jti)
+
+      head :ok
+    rescue JWT::DecodeError
+      render_unsupported_token_type_error
+    end
+
+    def revoke_refresh_token
+      token = RefreshToken.new(JsonWebToken.decode(params[:token]))
+      OAuthSession.revoke_for_refresh_token(refresh_token_jti: token.jti)
+
+      head :ok
+    rescue JWT::DecodeError
+      render_unsupported_token_type_error
+    end
+
     private
 
     def render_token_request_error(error:, status: :bad_request)
       render json: { error: }, status:
+    end
+
+    def render_unsupported_token_type_error
+      render json: { error: 'unsupported_token_type' }, status: :bad_request
     end
   end
 end

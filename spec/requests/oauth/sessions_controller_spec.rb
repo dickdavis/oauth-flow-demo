@@ -270,4 +270,73 @@ RSpec.describe OAuth::SessionsController do
       expect(response.parsed_body).to eq({ 'error' => 'unsupported_grant_type' })
     end
   end
+
+  describe 'POST /revoke (token_type_hint={ NOT `access_token` or `refresh_token` })' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'foobar' } }
+    let(:token) { JsonWebToken.encode(attributes_for(:access_token, oauth_session:)) }
+    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+    let(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'invokes the domain logic for revocation via generic lookup' do
+      allow(OAuthSession).to receive(:revoke_for_token).and_return(true)
+      call_endpoint
+      expect(OAuthSession).to have_received(:revoke_for_token)
+    end
+
+    it 'responds with HTTP status ok' do
+      call_endpoint
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe 'POST /revoke (token_type_hint=access_token)' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'access_token' } }
+    let(:token) { JsonWebToken.encode(attributes_for(:access_token, oauth_session:)) }
+    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+    let(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_access_token_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'invokes the domain logic for revocation via generic lookup' do
+      allow(OAuthSession).to receive(:revoke_for_access_token).and_return(true)
+      call_endpoint
+      expect(OAuthSession).to have_received(:revoke_for_access_token)
+    end
+
+    it 'responds with HTTP status ok' do
+      call_endpoint
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe 'POST /revoke (token_type_hint=refresh_token})' do
+    let(:headers) { {} }
+    let(:params) { { token:, token_type_hint: 'refresh_token' } }
+    let(:token) { JsonWebToken.encode(attributes_for(:refresh_token, oauth_session:)) }
+    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+    let(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+
+    include_context 'with an authenticated client', :post, :oauth_revoke_refresh_token_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'invokes the domain logic for revocation via generic lookup' do
+      allow(OAuthSession).to receive(:revoke_for_refresh_token).and_return(true)
+      call_endpoint
+      expect(OAuthSession).to have_received(:revoke_for_refresh_token)
+    end
+
+    it 'responds with HTTP status ok' do
+      call_endpoint
+      expect(response).to have_http_status(:ok)
+    end
+  end
 end

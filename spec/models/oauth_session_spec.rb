@@ -190,4 +190,134 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
       end
     end
   end
+
+  describe 'revocation' do
+    RSpec.shared_examples 'revokes self' do
+      let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+      let(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+
+      before do
+        # Set-up unrelated oauth sessions
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+      end
+
+      it 'revokes the oauth session' do
+        expect do
+          method_call
+          oauth_session.reload
+        end.to change(oauth_session, :status).from('created').to('revoked')
+      end
+
+      it 'does not revoke other oauth sessions' do
+        method_call
+        expect(described_class.where(status: 'revoked').count).to eq(1)
+      end
+    end
+
+    RSpec.shared_examples 'revokes active oauth session' do
+      let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+      let(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+
+      before do
+        # Set-up unrelated oauth sessions
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+        create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+
+        # Set-up a chain of oauth sessions related to an authorization grant
+        create(:oauth_session, authorization_grant:, status: 'refreshed')
+        create(:oauth_session, authorization_grant:, status: 'refreshed')
+      end
+
+      context 'when the oauth session is the active oauth session' do
+        it 'revokes the oauth session' do
+          expect do
+            method_call
+            oauth_session.reload
+          end.to change(oauth_session, :status).from('created').to('revoked')
+        end
+
+        it 'does not revoke other oauth sessions' do
+          method_call
+          expect(described_class.where(status: 'revoked').count).to eq(1)
+        end
+      end
+
+      context 'when the oauth session is not the active oauth session' do
+        let(:oauth_session) { create(:oauth_session, authorization_grant:, status: 'refreshed') }
+
+        it 'revokes the oauth session' do
+          create(:oauth_session, authorization_grant:)
+          expect do
+            method_call
+            oauth_session.reload
+          end.to change(oauth_session, :status).from('refreshed').to('revoked')
+        end
+
+        it 'revokes the active oauth session for the authorization grant' do
+          active_oauth_session = create(:oauth_session, authorization_grant:)
+          expect do
+            method_call
+            active_oauth_session.reload
+          end.to change(active_oauth_session, :status).from('created').to('revoked')
+        end
+
+        it 'does not revoke unrelated oauth sessions' do
+          create(:oauth_session, authorization_grant:)
+          method_call
+          expect(described_class.where(status: 'revoked').count).to eq(2)
+        end
+      end
+    end
+
+    describe '#revoke_self_and_active_session' do
+      let(:method_call) { oauth_session.revoke_self_and_active_session }
+
+      it_behaves_like 'revokes self'
+      it_behaves_like 'revokes active oauth session'
+    end
+
+    describe '.revoke_for_token' do
+      subject(:method_call) { described_class.revoke_for_token(jti:) }
+
+      let(:jti) { token.jti }
+
+      context 'when provided an access token JTI' do
+        let(:token) { build(:access_token, oauth_session:) }
+
+        it_behaves_like 'revokes self'
+        it_behaves_like 'revokes active oauth session'
+      end
+
+      context 'when provided a refresh token JTI' do
+        let(:token) { build(:refresh_token, oauth_session:) }
+
+        it_behaves_like 'revokes self'
+        it_behaves_like 'revokes active oauth session'
+      end
+    end
+
+    describe '.revoke_for_access_token' do
+      subject(:method_call) { described_class.revoke_for_access_token(access_token_jti:) }
+
+      let(:access_token_jti) { token.jti }
+
+      let(:token) { build(:access_token, oauth_session:) }
+
+      it_behaves_like 'revokes self'
+      it_behaves_like 'revokes active oauth session'
+    end
+
+    describe '.revoke_for_refresh_token' do
+      subject(:method_call) { described_class.revoke_for_refresh_token(refresh_token_jti:) }
+
+      let(:refresh_token_jti) { token.jti }
+      let(:token) { build(:refresh_token, oauth_session:) }
+
+      it_behaves_like 'revokes self'
+      it_behaves_like 'revokes active oauth session'
+    end
+  end
 end
