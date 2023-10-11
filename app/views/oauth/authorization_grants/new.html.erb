@@ -1,9 +1,9 @@
 <div class="flex h-screen">
   <div class="block w-full m-auto">
     <div class="card">
-      <%= tag.h2 t('oauth.authorization_grants.new.title'), class: 'text-2xl semibold mb-2' %>
-      <%= tag.p t('oauth.authorization_grants.new.lede'), class: 'mb-2' %>
-      <%= tag.p client_name, class: 'text-center text-xl semibold text-blue-800 bg-blue-100 rounded border-1 border-blue-800 p-8' %>
+      <%= tag.h2 t('oauth.authorization_grants.new.title'), class: 'text-2xl dark:text-white semibold mb-2' %>
+      <%= tag.p t('oauth.authorization_grants.new.lede'), class: 'dark:text-white mb-2' %>
+      <%= tag.p client_name, class: 'text-center text-xl semibold text-blue-800 dark:text-blue-600 bg-blue-100 dark:bg-transparent rounded border-2 border-blue-600 dark:border-blue-700 p-8' %>
       <div class="flex justify-between my-4">
         <%= button_to t('oauth.authorization_grants.new.reject_cta'), oauth_authorization_grants_path, params: { state:, approve: false }, class: 'btn-outline' %>
         <%= button_to t('oauth.authorization_grants.new.approve_cta'), oauth_authorization_grants_path, params: { state:, approve: true }, class: 'btn-primary'  %>
