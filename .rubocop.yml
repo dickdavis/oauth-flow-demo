@@ -3,6 +3,10 @@ require:
   - rubocop-rails
   - rubocop-rspec
   - rubocop-factory_bot
+  - 'test_prof/rubocop'
+
+inherit_gem:
+  test-prof: config/rubocop-rspec.yml
 
 AllCops:
   NewCops: enable
