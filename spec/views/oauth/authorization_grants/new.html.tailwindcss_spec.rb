@@ -7,16 +7,12 @@ RSpec.describe 'oauth/authorization_grants/new' do
     render template: 'oauth/authorization_grants/new', locals: { state: 'foo', client_name: 'bar' }
   end
 
-  it 'renders the title' do
-    expect(rendered).to match(/#{I18n.t('oauth.authorization_grants.new.title')}/)
-  end
-
-  it 'renders the lede' do
-    expect(rendered).to match(/#{I18n.t('oauth.authorization_grants.new.lede')}/)
-  end
-
-  it 'renders the client name' do
-    expect(rendered).to match(/bar/)
+  it 'renders the title, lede, and client name' do
+    aggregate_failures do
+      expect(rendered).to match(/#{I18n.t('oauth.authorization_grants.new.title')}/)
+      expect(rendered).to match(/#{I18n.t('oauth.authorization_grants.new.lede')}/)
+      expect(rendered).to match(/bar/)
+    end
   end
 
   it 'renders the reject cta' do
