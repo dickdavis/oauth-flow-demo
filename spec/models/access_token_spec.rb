@@ -5,9 +5,9 @@ require 'rails_helper'
 RSpec.describe AccessToken do
   subject(:model) { build(:access_token, oauth_session:) }
 
+  let_it_be(:user) { create(:user) }
+  let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
   let(:oauth_session) { create(:oauth_session, authorization_grant:) }
-  let(:authorization_grant) { create(:authorization_grant, user:) }
-  let(:user) { create(:user) }
 
   it_behaves_like 'a model that validates token claims'
 
