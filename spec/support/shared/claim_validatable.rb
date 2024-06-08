@@ -2,19 +2,33 @@
 
 RSpec.shared_examples 'a model that validates token claims' do
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:aud) }
-    it { is_expected.not_to allow_value('http://foo.bar/api').for(:aud) }
-
-    it { is_expected.to validate_presence_of(:exp) }
-    it { is_expected.not_to allow_value(5.minutes.ago.to_i).for(:exp) }
-
-    it { is_expected.to validate_presence_of(:iss) }
-    it { is_expected.not_to allow_value('http://foo.bar/').for(:iss) }
-
-    it { is_expected.to validate_presence_of(:jti) }
-
     it 'does not add any errors if all provided claims are valid' do
       expect(model).to be_valid
+    end
+
+    describe 'aud' do
+      specify(:aggregate_failures) do
+        expect(model).to validate_presence_of(:aud)
+        expect(model).not_to allow_value('http://foo.bar/api').for(:aud)
+      end
+    end
+
+    describe 'exp' do
+      specify(:aggregate_failures) do
+        expect(model).to validate_presence_of(:exp)
+        expect(model).not_to allow_value(5.minutes.ago.to_i).for(:exp)
+      end
+    end
+
+    describe 'iss' do
+      specify(:aggregate_failures) do
+        expect(model).to validate_presence_of(:iss)
+        expect(model).not_to allow_value('http://foo.bar/').for(:iss)
+      end
+    end
+
+    describe 'jti' do
+      it { is_expected.to validate_presence_of(:jti) }
     end
   end
 
