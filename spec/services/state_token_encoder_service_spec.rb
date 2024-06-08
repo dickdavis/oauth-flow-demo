@@ -65,12 +65,11 @@ RSpec.describe StateTokenEncoderService do
     end
 
     context 'with valid arguments' do
-      it 'returns ok status' do
-        expect(service_call.status).to eq(:ok)
-      end
-
-      it 'returns a valid JWT token' do
-        expect(service_call.body).to match(/\A[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\z/)
+      it 'returns HTTP ok status and a valid JWT token' do
+        aggregate_failures do
+          expect(service_call.status).to eq(:ok)
+          expect(service_call.body).to match(/\A[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\z/)
+        end
       end
 
       it 'returns a token which contains the code_challenge and code_challenge_method' do
