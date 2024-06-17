@@ -63,6 +63,7 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rspec-rails'
+  gem 'vernier', require: false
 end
 
 group :development do
@@ -86,4 +87,5 @@ end
 
 group :test do
   gem 'shoulda-matchers'
+  gem 'test-prof'
 end

@@ -4,7 +4,6 @@ require 'rails_helper'
 
 RSpec.describe OAuth::AuthorizationsController do
   describe 'GET /authorize' do
-    let(:headers) { {} }
     let(:params) { { client_id:, state:, code_challenge:, code_challenge_method:, response_type: } }
     let(:client_id) { 'democlient' }
     let(:state) { 'foobar' }

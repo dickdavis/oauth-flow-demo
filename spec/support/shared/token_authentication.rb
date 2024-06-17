@@ -68,13 +68,13 @@ RSpec.shared_context 'with a valid access token' do |method, path|
 
   let(:url) { send(path) }
   let(:options_for_request) { { params: shared_context_params, headers: shared_context_headers } }
-  let(:shared_context_params) { params }
-  let(:shared_context_headers) { headers.reverse_merge!(bearer_token_header) }
+  let(:shared_context_params) { try(:params) || {} }
+  let(:shared_context_headers) { (try(:headers) || {}).reverse_merge!(bearer_token_header) }
 
-  let(:authorization_grant) { create(:authorization_grant, user:) }
-  let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+  let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
+  let_it_be(:oauth_session) { create(:oauth_session, authorization_grant:) }
 
-  def bearer_token_header
+  let(:bearer_token_header) do
     _, token = OAuthTokenEncoderService.call(
       client_id: 'democlient',
       expiration: Rails.configuration.oauth.access_token_expiration.minutes.from_now,
