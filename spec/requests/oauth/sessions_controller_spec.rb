@@ -214,6 +214,22 @@ RSpec.describe OAuth::SessionsController do
     end
   end
 
+  describe 'POST /token (grant_type="urn:ietf:params:oauth:grant-type:token-exchange")' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
+    let(:params) { { grant_type: } }
+    let(:grant_type) { 'urn:ietf:params:oauth:grant-type:token-exchange' }
+
+    include_context 'with an authenticated client', :post, :oauth_create_session_path
+
+    it_behaves_like 'an endpoint that requires client authentication'
+
+    it 'creates an OAuth session and serializes the token data' do
+      call_endpoint
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe 'POST /token (grant_type={ NOT `authorization_code` or `refresh_token` })' do
     let_it_be(:user) { create(:user) }
     let_it_be(:authorization_grant) { create(:authorization_grant, user:) }

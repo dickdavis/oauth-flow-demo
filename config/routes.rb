@@ -36,6 +36,10 @@ Rails.application.routes.draw do
       post 'token', to: 'sessions#token', as: :create_session
     end
 
+    constraints(GrantTypeConstraint.new('urn:ietf:params:oauth:grant-type:token-exchange')) do
+      post 'token', to: 'sessions#exchange', as: :exchange_session
+    end
+
     post 'token', to: 'sessions#unsupported_grant_type', as: :unsupported_grant_type
 
     constraints(TokenTypeHintConstraint.new('access_token')) do
