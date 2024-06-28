@@ -4,8 +4,6 @@ module OAuth
   ##
   # Controller for issuing access and refresh tokens.
   class SessionsController < BaseController
-    PERMITTED_GRANT_TYPES = %w[authorization_code refresh_token].freeze
-
     skip_before_action :verify_authenticity_token
 
     rescue_from OAuth::InvalidGrantError do
@@ -42,6 +40,10 @@ module OAuth
     rescue OAuth::RevokedSessionError => error
       Rails.logger.warn(error.message)
       render_token_request_error(error: 'invalid_request')
+    end
+
+    def exchange
+      head :ok
     end
 
     def unsupported_grant_type
