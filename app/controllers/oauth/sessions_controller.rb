@@ -43,7 +43,14 @@ module OAuth
     end
 
     def exchange
-      head :ok
+      oauth_session = oauth_session_from_subject_token
+      resource = params[:resource]
+      subject_token_type = params[:subject_token_type]
+      oauth_session.validate_params_for_exchange!(resource:, subject_token_type:)
+
+      render json: { resource:, subject_token_type: }
+    rescue OAuth::InvalidResourceError, OAuth::InvalidSubjectTokenTypeError
+      render_token_request_error(error: 'invalid_request')
     end
 
     def unsupported_grant_type
@@ -85,6 +92,17 @@ module OAuth
 
     def render_unsupported_token_type_error
       render json: { error: 'unsupported_token_type' }, status: :bad_request
+    end
+
+    def oauth_session_from_subject_token
+      access_token = AccessToken.new(JsonWebToken.decode(params[:subject_token]))
+      raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
+
+      OAuthSession.find_by!(access_token_jti: access_token.jti)
+    rescue JWT::DecodeError
+      raise OAuth::InvalidAccessTokenError
+    rescue ActiveRecord::RecordNotFound
+      raise OAuth::OAuthSessionNotFound
     end
   end
 end

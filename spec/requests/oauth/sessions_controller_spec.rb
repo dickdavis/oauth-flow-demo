@@ -217,16 +217,62 @@ RSpec.describe OAuth::SessionsController do
   describe 'POST /token (grant_type="urn:ietf:params:oauth:grant-type:token-exchange")' do
     let_it_be(:user) { create(:user) }
     let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
-    let(:params) { { grant_type: } }
+    let(:params) { { grant_type:, subject_token:, resource:, subject_token_type:, client_id: } }
+    let!(:oauth_session) { create(:oauth_session, authorization_grant:) }
+    let(:subject_token) { JsonWebToken.encode(attributes_for(:access_token, oauth_session:)) }
     let(:grant_type) { 'urn:ietf:params:oauth:grant-type:token-exchange' }
+    let(:resource) { '/api/v1/users/current' }
+    let(:subject_token_type) { 'urn:ietf:params:oauth:token-type:access_token' }
+    let(:client_id) { 'democlient' }
 
     include_context 'with an authenticated client', :post, :oauth_create_session_path
 
     it_behaves_like 'an endpoint that requires client authentication'
 
-    it 'creates an OAuth session and serializes the token data' do
-      call_endpoint
-      expect(response).to have_http_status(:ok)
+    shared_examples 'returns invalid request response' do
+      it 'responds with HTTP status bad request and error invalid_resource as JSON' do
+        call_endpoint
+        aggregate_failures do
+          expect(response).to have_http_status(:bad_request)
+          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+        end
+      end
+    end
+
+    context 'when an empty resource is provided' do
+      let(:resource) { '' }
+
+      include_examples 'returns invalid request response'
+    end
+
+    context 'when an invalid resource is provided' do
+      let(:resource) { 'foobar' }
+
+      include_examples 'returns invalid request response'
+    end
+
+    context 'when an empty subject token type is provided' do
+      let(:subject_token_type) { '' }
+
+      include_examples 'returns invalid request response'
+    end
+
+    context 'when the subject token type is not valid' do
+      let(:subject_token_type) { 'foobar' }
+
+      include_examples 'returns invalid request response'
+    end
+
+    context 'when valid params are provided' do
+      it 'returns resource and subject_token_type' do
+        call_endpoint
+        aggregate_failures do
+          expect(response).to have_http_status(:ok)
+          expect(response.parsed_body).to eq(
+            { 'resource' => resource, 'subject_token_type' => subject_token_type }
+          )
+        end
+      end
     end
   end
 

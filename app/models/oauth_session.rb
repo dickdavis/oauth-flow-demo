@@ -4,6 +4,7 @@
 # Models an oauth session with minimal data from session.
 class OAuthSession < ApplicationRecord
   include OAuthSessionCreatable
+  include OAuthSessionExchangeable
 
   STATUS_ENUM_VALUES = {
     created: 'created',
