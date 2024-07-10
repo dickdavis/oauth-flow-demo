@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
 ##
-# Provides errors for OAuth server
+# Namespace for OAuth-related models
 module OAuth
+  def self.table_name_prefix
+    'oauth_'
+  end
+
   ##
   # Error for when client_id param is missing.
   class MissingClientIdError < StandardError
