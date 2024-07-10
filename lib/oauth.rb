@@ -24,8 +24,20 @@ module OAuth
   class UnsupportedGrantTypeError < StandardError; end
 
   ##
+  # Error for when OAuth Session is not found.
+  class OAuthSessionNotFound < StandardError; end
+
+  ##
   # Error for when client provides a code that does not map to an valid authorization grant.
   class InvalidGrantError < StandardError; end
+
+  ##
+  # Error for when the resource probided fails validation.
+  class InvalidResourceError < StandardError; end
+
+  ##
+  # Error for when the subject token type fails validation.
+  class InvalidSubjectTokenTypeError < StandardError; end
 
   ##
   # Error for when client provides a code verifier that fails validation.

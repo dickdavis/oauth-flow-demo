@@ -67,3 +67,7 @@ detectors:
     exclude:
       - AccessToken#valid_exp?
       - API::BaseController#user_from_token
+  UtilityFunction:
+    exclude:
+      - OAuthSessionExchangeable#valid_resource?
+      - OAuthSessionExchangeable#valid_subject_token_type?
