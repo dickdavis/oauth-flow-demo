@@ -5,6 +5,8 @@ module OAuth
   # Controller for issuing access and refresh tokens.
   class SessionsController < BaseController
     skip_before_action :verify_authenticity_token
+    before_action :set_authorization_grant, only: :token
+    before_action :authenticate_client, except: :unsupported_grant_type
 
     rescue_from OAuth::InvalidGrantError do
       render_token_request_error(error: 'invalid_grant')
@@ -16,23 +18,23 @@ module OAuth
     end
 
     def token
-      authorization_grant = AuthorizationGrant.find_by(id: params[:code])
-      raise OAuth::InvalidGrantError if authorization_grant.blank? || authorization_grant.redeemed?
-
-      access_token, refresh_token, expiration = authorization_grant.redeem(
+      access_token, refresh_token, expiration = @authorization_grant.redeem(
+        redirection_uri: params[:redirect_uri],
         code_verifier: params[:code_verifier]
       ).deconstruct
 
       render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
-    rescue OAuth::InvalidCodeVerifierError
+    rescue OAuth::UnsuccessfulChallengeError
       render_token_request_error(error: 'invalid_request')
     end
 
+    # rubocop:disable Metrics/AbcSize
     def refresh
-      token = RefreshToken.new(JsonWebToken.decode(params[:refresh_token]))
-      oauth_session = OAuthSession.find_by(refresh_token_jti: token.jti)
+      token = OAuth::RefreshToken.new(JsonWebToken.decode(params[:refresh_token]))
+      oauth_session = OAuth::Session.find_by(refresh_token_jti: token.jti)
+      client_id = params[:client_id].presence || oauth_session.oauth_authorization_grant.oauth_client.id
 
-      access_token, refresh_token, expiration = oauth_session.refresh(token:).deconstruct
+      access_token, refresh_token, expiration = oauth_session.refresh(token:, client_id:).deconstruct
 
       render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
     rescue JWT::DecodeError
@@ -41,6 +43,7 @@ module OAuth
       Rails.logger.warn(error.message)
       render_token_request_error(error: 'invalid_request')
     end
+    # rubocop:enable Metrics/AbcSize
 
     def exchange
       oauth_session = oauth_session_from_subject_token
@@ -59,7 +62,7 @@ module OAuth
 
     def revoke
       token = JsonWebToken.decode(params[:token])
-      OAuthSession.revoke_for_token(jti: token[:jti])
+      OAuth::Session.revoke_for_token(jti: token[:jti])
 
       head :ok
     rescue JWT::DecodeError
@@ -67,8 +70,8 @@ module OAuth
     end
 
     def revoke_access_token
-      token = AccessToken.new(JsonWebToken.decode(params[:token]))
-      OAuthSession.revoke_for_access_token(access_token_jti: token.jti)
+      token = OAuth::AccessToken.new(JsonWebToken.decode(params[:token]))
+      OAuth::Session.revoke_for_access_token(access_token_jti: token.jti)
 
       head :ok
     rescue JWT::DecodeError
@@ -76,8 +79,8 @@ module OAuth
     end
 
     def revoke_refresh_token
-      token = RefreshToken.new(JsonWebToken.decode(params[:token]))
-      OAuthSession.revoke_for_refresh_token(refresh_token_jti: token.jti)
+      token = OAuth::RefreshToken.new(JsonWebToken.decode(params[:token]))
+      OAuth::Session.revoke_for_refresh_token(refresh_token_jti: token.jti)
 
       head :ok
     rescue JWT::DecodeError
@@ -85,6 +88,11 @@ module OAuth
     end
 
     private
+
+    def set_authorization_grant
+      @authorization_grant = OAuth::AuthorizationGrant.find_by(id: params[:code])
+      raise OAuth::InvalidGrantError if @authorization_grant.blank? || @authorization_grant.redeemed?
+    end
 
     def render_token_request_error(error:, status: :bad_request)
       render json: { error: }, status:
@@ -95,10 +103,10 @@ module OAuth
     end
 
     def oauth_session_from_subject_token
-      access_token = AccessToken.new(JsonWebToken.decode(params[:subject_token]))
+      access_token = OAuth::AccessToken.new(JsonWebToken.decode(params[:subject_token]))
       raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
 
-      OAuthSession.find_by!(access_token_jti: access_token.jti)
+      OAuth::Session.find_by!(access_token_jti: access_token.jti)
     rescue JWT::DecodeError
       raise OAuth::InvalidAccessTokenError
     rescue ActiveRecord::RecordNotFound
