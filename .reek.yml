@@ -45,7 +45,7 @@ directories:
 detectors:
   ControlParameter:
     exclude:
-      - ClientAuthentication#http_basic_auth_successful?
+      - OAuth::BaseController#authenticate_client
   DuplicateMethodCall:
     exclude:
       - API::BaseController#user_from_token

@@ -18,6 +18,14 @@ module OAuth
   end
 
   ##
+  # Error for when the OAuth client is invalid.
+  class InvalidClientError < StandardError; end
+
+  ##
+  # Error for when the OAuth client is mismatched.
+  class ClientMismatchError < StandardError; end
+
+  ##
   # Error for when client redirection URI is invalid.
   class InvalidRedirectUrlError < StandardError; end
 

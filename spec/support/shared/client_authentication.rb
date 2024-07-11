@@ -5,12 +5,10 @@ RSpec.shared_context 'with an authenticated client' do |method, path|
 
   let(:url) { send(path) }
   let(:options_for_request) { { params: shared_context_params, headers: shared_context_headers } }
-  let(:shared_context_params) { (try(:params) || {}).reverse_merge!(client_id: 'democlient') }
+  let(:shared_context_params) { (try(:params) || {}).reverse_merge!(client_id: oauth_client.id) }
   let(:shared_context_headers) { (try(:headers) || {}).reverse_merge!(http_basic_auth_header) }
   let(:http_basic_auth_header) do
-    client_id = 'democlient'
-    client_secret = Rails.application.credentials.clients[client_id.to_sym]
-    auth = ActionController::HttpAuthentication::Basic.encode_credentials(client_id, client_secret)
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials(oauth_client.id, oauth_client.api_key)
     { 'HTTP_AUTHORIZATION' => auth }
   end
 end
@@ -33,7 +31,7 @@ RSpec.shared_examples 'an endpoint that requires client authentication' do
   end
 
   context 'without HTTP basic auth header' do
-    let(:shared_context_headers) { super().except('HTTP_AUTHORIZATION') }
+    let(:http_basic_auth_header) { {} }
 
     include_examples 'returns HTTP status unauthorized and access denied message'
   end
