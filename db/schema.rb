@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_10_184054) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_10_230952) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -20,17 +20,25 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_10_184054) do
   create_enum "oauth_client_type", ["confidential", "public"]
   create_enum "oauth_session_status", ["created", "expired", "refreshed", "revoked"]
 
-  create_table "authorization_grants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "code_challenge", null: false
-    t.string "code_challenge_method", default: "S256", null: false
+  create_table "oauth_authorization_grants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "expires_at", null: false
-    t.string "client_id", null: false
-    t.string "client_redirection_uri", null: false
+    t.boolean "redeemed", default: false, null: false
+    t.uuid "oauth_client_id", null: false
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "redeemed", default: false, null: false
-    t.index ["user_id"], name: "index_authorization_grants_on_user_id"
+    t.index ["oauth_client_id"], name: "index_oauth_authorization_grants_on_oauth_client_id"
+    t.index ["user_id"], name: "index_oauth_authorization_grants_on_user_id"
+  end
+
+  create_table "oauth_challenges", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "code_challenge"
+    t.string "code_challenge_method"
+    t.string "redirect_uri"
+    t.uuid "oauth_authorization_grant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_authorization_grant_id"], name: "index_oauth_challenges_on_oauth_authorization_grant_id"
   end
 
   create_table "oauth_clients", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -48,11 +56,13 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_10_184054) do
     t.string "access_token_jti", null: false
     t.string "refresh_token_jti", null: false
     t.enum "status", default: "created", null: false, enum_type: "oauth_session_status"
-    t.uuid "authorization_grant_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "authorization_grants_id"
+    t.uuid "oauth_authorization_grant_id"
     t.index ["access_token_jti"], name: "index_oauth_sessions_on_access_token_jti", unique: true
-    t.index ["authorization_grant_id"], name: "index_oauth_sessions_on_authorization_grant_id"
+    t.index ["authorization_grants_id"], name: "index_oauth_sessions_on_authorization_grants_id"
+    t.index ["oauth_authorization_grant_id"], name: "index_oauth_sessions_on_oauth_authorization_grant_id"
     t.index ["refresh_token_jti"], name: "index_oauth_sessions_on_refresh_token_jti", unique: true
   end
 
@@ -66,5 +76,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_10_184054) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  add_foreign_key "oauth_sessions", "authorization_grants"
+  add_foreign_key "oauth_authorization_grants", "oauth_clients"
+  add_foreign_key "oauth_challenges", "oauth_authorization_grants"
+  add_foreign_key "oauth_sessions", "oauth_authorization_grants"
 end

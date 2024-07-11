@@ -33,6 +33,8 @@ directories:
     UtilityFunction:
       enabled: false
   "db/migrate":
+    DuplicateMethodCall:
+      enabled: false
     FeatureEnvy:
       enabled: false
     TooManyStatements:
