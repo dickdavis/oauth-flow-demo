@@ -12,7 +12,7 @@ RSpec.shared_examples 'an endpoint that requires token authentication' do
     end
   end
 
-  context 'without a valid JWT in the AUTHORIZATION header' do
+  context 'without a malformed AUTHORIZATION header' do
     before do
       shared_context_headers['AUTHORIZATION'] = 'foobar'
     end
@@ -23,17 +23,9 @@ RSpec.shared_examples 'an endpoint that requires token authentication' do
     end
   end
 
-  context 'with an access token with invalid claims in the AUTHORIZATION header' do
-    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
-    let(:authorization_grant) { create(:authorization_grant, user:) }
-
+  context 'without a valid JWT in the AUTHORIZATION header' do
     before do
-      token = OAuthTokenEncoderService.call(
-        client_id: 'democlient',
-        expiration: 5.minutes.ago,
-        optional_claims: { user_id: user.id, jti: oauth_session.access_token_jti }
-      ).token
-      shared_context_headers['AUTHORIZATION'] = token
+      shared_context_headers['AUTHORIZATION'] = 'Bearer foobar'
     end
 
     it 'responds with HTTP status unauthorized' do
@@ -42,18 +34,32 @@ RSpec.shared_examples 'an endpoint that requires token authentication' do
     end
   end
 
-  context 'with an access token with a user claim that does not match the oauth session' do
-    let(:oauth_session) { create(:oauth_session, authorization_grant:) }
-    let(:authorization_grant) { create(:authorization_grant, user:) }
-    let(:other_user) { create(:user) }
+  context 'with a JWT with invalid claims in the AUTHORIZATION header' do
+    let(:oauth_access_token) { JsonWebToken.encode({ foo: 'bar' }) }
 
     before do
-      token = OAuthTokenEncoderService.call(
-        client_id: 'democlient',
-        expiration: 5.minutes.ago,
-        optional_claims: { user_id: other_user.id, jti: oauth_session.access_token_jti }
-      ).token
-      shared_context_headers['AUTHORIZATION'] = token
+      shared_context_headers['AUTHORIZATION'] = "Bearer #{oauth_access_token}"
+    end
+
+    it 'responds with HTTP status unauthorized' do
+      call_endpoint
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  context 'with a access token from an invalid OAuth session in the AUTHORIZATION header' do
+    let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'revoked') }
+    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, user:) }
+    let(:oauth_access_token) { build(:oauth_access_token, oauth_session:) }
+    let(:encoded_token) { JsonWebToken.encode(oauth_access_token.to_h) }
+
+    let(:bearer_token_header) do
+      { 'AUTHORIZATION' => "Bearer #{encoded_token}" }
+    end
+
+    before do
+      oauth_session.update!(access_token_jti: oauth_access_token.jti)
+      shared_context_headers['AUTHORIZATION'] = "Bearer #{encoded_token}"
     end
 
     it 'responds with HTTP status unauthorized' do
@@ -71,16 +77,12 @@ RSpec.shared_context 'with a valid access token' do |method, path|
   let(:shared_context_params) { try(:params) || {} }
   let(:shared_context_headers) { (try(:headers) || {}).reverse_merge!(bearer_token_header) }
 
-  let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
-  let_it_be(:oauth_session) { create(:oauth_session, authorization_grant:) }
+  let_it_be(:oauth_authorization_grant) { create(:oauth_authorization_grant, user:) }
+  let_it_be(:oauth_session) { create(:oauth_session, oauth_authorization_grant:) }
+  let_it_be(:oauth_access_token) { build(:oauth_access_token, oauth_session:) }
+  let_it_be(:encoded_token) { JsonWebToken.encode(oauth_access_token.to_h) }
 
   let(:bearer_token_header) do
-    _, token = OAuthTokenEncoderService.call(
-      client_id: 'democlient',
-      expiration: Rails.configuration.oauth.access_token_expiration.minutes.from_now,
-      optional_claims: { user_id: user.id, jti: oauth_session.access_token_jti }
-    ).deconstruct
-
-    { 'AUTHORIZATION' => "Bearer #{token}" }
+    { 'AUTHORIZATION' => "Bearer #{encoded_token}" }
   end
 end
