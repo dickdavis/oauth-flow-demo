@@ -18,6 +18,16 @@ module OAuth
 
     before_create :generate_api_key
 
+    def url_for_redirect(params:)
+      uri = URI(redirect_uri)
+      params_for_query = params.collect { |key, value| [key.to_s, value] }
+      encoded_params = URI.encode_www_form(params_for_query)
+      uri.query = encoded_params
+      uri.to_s
+    rescue URI::InvalidURIError, ArgumentError, NoMethodError => error
+      raise OAuth::InvalidRedirectUrlError, error.message
+    end
+
     private
 
     def redirect_uri_is_valid_uri

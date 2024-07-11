@@ -80,4 +80,22 @@ RSpec.describe OAuth::Client do # rubocop:disable RSpec/FilePath
       end
     end
   end
+
+  describe '#url_for_redirect' do
+    context 'with valid params' do
+      let(:params) { { foo: 'bar' } }
+
+      it 'returns the redirect_uri with the params' do
+        expect(model.url_for_redirect(params:)).to eq('http://localhost:3000/?foo=bar')
+      end
+    end
+
+    context 'with invalid params' do
+      let(:params) { 'foobar' }
+
+      it 'raises an OAuth::InvalidRedirectUrlError' do
+        expect { model.url_for_redirect(params:) }.to raise_error(OAuth::InvalidRedirectUrlError)
+      end
+    end
+  end
 end

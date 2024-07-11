@@ -3,6 +3,8 @@
 ##
 # Namespace for OAuth-related models
 module OAuth
+  CONFIG = Rails.configuration.oauth.freeze
+
   def self.table_name_prefix
     'oauth_'
   end
@@ -48,8 +50,16 @@ module OAuth
   class InvalidCodeVerifierError < StandardError; end
 
   ##
-  # Error for when ivalid token params are provided.
-  class InvalidTokenParamError < StandardError; end
+  # Error for when an invalid redirection_uri is provided.
+  class InvalidRedirectionURIError < StandardError; end
+
+  ##
+  # Error for when a PKCE challenge has failed.
+  class UnsuccessfulChallengeError < StandardError; end
+
+  ##
+  # Error for when an authorization code has already beed redeemed.
+  class AuthorizationCodeRedeemedError < StandardError; end
 
   ##
   # Error for when server experiences an error.

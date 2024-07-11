@@ -2,12 +2,12 @@
 
 require 'rails_helper'
 
-RSpec.describe AccessToken do
-  subject(:model) { build(:access_token, oauth_session:) }
+RSpec.describe OAuth::AccessToken do # rubocop:disable RSpec/FilePath
+  subject(:model) { build(:oauth_access_token, oauth_session:) }
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:authorization_grant) { create(:authorization_grant, user:) }
-  let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+  let_it_be(:oauth_authorization_grant) { create(:oauth_authorization_grant, user:) }
+  let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:) }
 
   it_behaves_like 'a model that validates token claims'
 
@@ -33,6 +33,21 @@ RSpec.describe AccessToken do
           end.to change(oauth_session, :status).from('created').to('revoked')
         end
       end
+    end
+  end
+
+  describe '#to_h' do
+    it 'returns the model attributes' do
+      expect(model.to_h).to eq(
+        {
+          aud: model.aud,
+          exp: model.exp,
+          iat: model.iat,
+          iss: model.iss,
+          jti: model.jti,
+          user_id: model.user_id
+        }
+      )
     end
   end
 end

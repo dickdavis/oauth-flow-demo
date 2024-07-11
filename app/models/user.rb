@@ -5,7 +5,10 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_many :authorization_grants, dependent: :destroy
+  has_many :oauth_authorization_grants,
+           class_name: 'OAuth::AuthorizationGrant',
+           inverse_of: :user,
+           dependent: :destroy
 
   validates :first_name, presence: true, length: { maximum: 255 }
   validates :last_name, presence: true, length: { maximum: 255 }
