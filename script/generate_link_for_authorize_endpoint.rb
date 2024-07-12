@@ -4,8 +4,9 @@ require 'digest'
 
 code_verifier = SecureRandom.base64(55).tr('+/', '-_').tr('=', '')
 code_challenge = Digest::SHA256.base64digest(code_verifier).tr('+/', '-_').tr('=', '')
-client_id = 'democlient'
-client_secret = Rails.application.credentials.clients[client_id.to_sym]
+client = OAuth::Client.where(client_type: 'confidential').first
+client_id = client.id
+client_secret = client.api_key
 
 puts <<~TEXT
   Copy down the code verifier and code challenge for referencing later in the process when using Postman to send requests.

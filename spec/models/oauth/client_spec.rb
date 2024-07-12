@@ -66,8 +66,17 @@ RSpec.describe OAuth::Client do # rubocop:disable RSpec/FilePath
 
   describe 'callbacks' do
     describe '#generate_api_key' do
-      it 'generates an API key when a new client is created' do
-        expect { model.save! }.to change(model, :api_key).from(nil).to(be_present)
+      context 'when client type is confidential' do
+        it 'generates an API key when a new client is created' do
+          expect { model.save! }.to change(model, :api_key).from(nil).to(be_present)
+        end
+      end
+
+      context 'when client type is public' do
+        it 'do not generate an API key when a new client is created' do
+          model.client_type = 'public'
+          expect { model.save! }.not_to change(model, :api_key).from(nil)
+        end
       end
     end
   end

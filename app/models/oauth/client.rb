@@ -28,6 +28,8 @@ module OAuth
     end
 
     def generate_api_key
+      return if client_type == 'public'
+
       self.api_key = SecureRandom.hex
     end
   end
