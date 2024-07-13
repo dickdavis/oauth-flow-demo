@@ -52,9 +52,11 @@ RSpec.shared_examples 'a model that creates OAuth sessions' do
     end
 
     it 'returns the access token expiration' do
-      results = method_call
-      token = JsonWebToken.decode(results.access_token)
-      expect(token[:exp]).to eq(results.expiration)
+      Timecop.freeze(Time.zone.now) do
+        results = method_call
+        token = JsonWebToken.decode(results.access_token)
+        expect(token[:exp]).to eq(results.expiration)
+      end
     end
   end
 

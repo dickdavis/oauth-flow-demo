@@ -30,7 +30,7 @@ module OAuth
 
     # rubocop:disable Metrics/AbcSize
     def refresh
-      token = OAuth::RefreshToken.new(JsonWebToken.decode(params[:refresh_token]))
+      token = OAuth::RefreshToken.from_token(params[:refresh_token])
       oauth_session = OAuth::Session.find_by(refresh_token_jti: token.jti)
       client_id = params[:client_id].presence || oauth_session.oauth_authorization_grant.oauth_client.id
 
@@ -70,7 +70,7 @@ module OAuth
     end
 
     def revoke_access_token
-      token = OAuth::AccessToken.new(JsonWebToken.decode(params[:token]))
+      token = OAuth::AccessToken.from_token(params[:token])
       OAuth::Session.revoke_for_access_token(access_token_jti: token.jti)
 
       head :ok
@@ -79,7 +79,7 @@ module OAuth
     end
 
     def revoke_refresh_token
-      token = OAuth::RefreshToken.new(JsonWebToken.decode(params[:token]))
+      token = OAuth::RefreshToken.from_token(params[:token])
       OAuth::Session.revoke_for_refresh_token(refresh_token_jti: token.jti)
 
       head :ok
@@ -103,7 +103,7 @@ module OAuth
     end
 
     def oauth_session_from_subject_token
-      access_token = OAuth::AccessToken.new(JsonWebToken.decode(params[:subject_token]))
+      access_token = OAuth::AccessToken.from_token(params[:subject_token])
       raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
 
       OAuth::Session.find_by!(access_token_jti: access_token.jti)

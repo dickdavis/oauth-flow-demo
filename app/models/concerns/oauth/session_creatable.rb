@@ -14,41 +14,24 @@ module OAuth
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def create_oauth_session(authorization_grant:)
       oauth_client = authorization_grant.oauth_client
-      access_token_expiration = oauth_client.access_token_duration.seconds.from_now
-      refresh_token_expiration = oauth_client.refresh_token_duration.seconds.from_now
+      access_token_expiration = oauth_client.access_token_duration.seconds.from_now.to_i
+      access_token = OAuth::AccessToken.default(user_id:, exp: access_token_expiration)
 
-      access_token_jti, access_token = generate_token(
-        expiration: access_token_expiration,
-        optional_claims: { user_id: }
-      ).deconstruct
+      refresh_token_expiration = oauth_client.refresh_token_duration.seconds.from_now.to_i
+      refresh_token = OAuth::RefreshToken.default(exp: refresh_token_expiration)
 
-      refresh_token_jti, refresh_token = generate_token(
-        expiration: refresh_token_expiration
-      ).deconstruct
+      oauth_session = authorization_grant.oauth_sessions.new(
+        access_token_jti: access_token.jti, refresh_token_jti: refresh_token.jti
+      )
 
-      oauth_session = authorization_grant.oauth_sessions.new(access_token_jti:, refresh_token_jti:)
       if oauth_session.save
         yield
-        TokenContainer[access_token, refresh_token, access_token_expiration.to_i]
+        TokenContainer[access_token.to_encoded_token, refresh_token.to_encoded_token, access_token.exp]
       else
         errors = oauth_session.errors.full_messages.join(', ')
         raise OAuth::ServerError, I18n.t('oauth.server_error.oauth_session_failure', errors:)
       end
     end
-    # rubocop:enable Metrics/AbcSize
-
-    def generate_token(expiration:, optional_claims: {})
-      payload = {
-        aud: OAuth::CONFIG.audience_url,
-        iat: Time.zone.now.to_i,
-        iss: OAuth::CONFIG.issuer_url,
-        jti: SecureRandom.uuid
-      }.merge(optional_claims)
-
-      token = JsonWebToken.encode(payload, expiration)
-
-      Token[payload[:jti], token]
-    end
-    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
 end

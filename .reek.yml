@@ -50,10 +50,11 @@ detectors:
     exclude:
       - API::BaseController#user_from_token
       - OAuth::AuthorizationGrant#redeem
+      - OAuth::SessionsController#refresh
   FeatureEnvy:
     exclude:
-      - AuthorizationGrantsController#create
       - ClientAuthentication#http_basic_auth_successful?
+      - OAuth::SessionCreatable#create_oauth_session
   TooManyInstanceVariables:
     exclude:
       - StateTokenEncoderService
@@ -70,9 +71,12 @@ detectors:
       - OAuth::Client#url_for_redirect
       - OAuth::SessionsController#token
       - OAuth::SessionCreatable#create_oauth_session
+      - OAuth::SessionsController#exchange
+      - OAuth::SessionsController#refresh
       - OAuth::Session#refresh
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
+      - StateTokenEncoderService#initialize
   UtilityFunction:
     exclude:
       - OAuth::SessionCreatable#generate_token

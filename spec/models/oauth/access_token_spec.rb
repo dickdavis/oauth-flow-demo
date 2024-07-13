@@ -36,6 +36,32 @@ RSpec.describe OAuth::AccessToken do # rubocop:disable RSpec/FilePath
     end
   end
 
+  describe '.default' do
+    let(:user_id) { '123' }
+    let(:exp) { 1.hour.from_now.to_i }
+
+    it 'returns an access token with default claims' do
+      refresh_token = described_class.default(exp:, user_id:)
+      aggregate_failures do
+        expect(refresh_token).to be_a(described_class)
+        expect(refresh_token.aud).to eq(OAuth::CONFIG.audience_url)
+        expect(refresh_token.exp).to eq(exp)
+        expect(refresh_token.iat).to be_a(Integer)
+        expect(refresh_token.iss).to eq(OAuth::CONFIG.issuer_url)
+        expect(refresh_token.jti).to match(OAuth::Session::VALID_UUID_REGEX)
+        expect(refresh_token.user_id).to eq(user_id)
+      end
+    end
+  end
+
+  describe '.from_token' do
+    let(:token) { JsonWebToken.encode(model.to_h) }
+
+    it 'returns a model' do
+      expect(described_class.from_token(token)).to be_a(described_class)
+    end
+  end
+
   describe '#to_h' do
     it 'returns the model attributes' do
       expect(model.to_h).to eq(
@@ -48,6 +74,12 @@ RSpec.describe OAuth::AccessToken do # rubocop:disable RSpec/FilePath
           user_id: model.user_id
         }
       )
+    end
+  end
+
+  describe '#to_encoded_token' do
+    it 'returns the encoded token' do
+      expect(model.to_encoded_token).to eq(JsonWebToken.encode(model.to_h, model.exp))
     end
   end
 end

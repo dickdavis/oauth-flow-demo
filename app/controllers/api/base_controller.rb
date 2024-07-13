@@ -16,7 +16,7 @@ module API
       raise OAuth::MissingAuthorizationHeaderError if bearer_token_header.blank?
 
       token = bearer_token_header.split.last
-      access_token = OAuth::AccessToken.new(JsonWebToken.decode(token))
+      access_token = OAuth::AccessToken.from_token(token)
       raise OAuth::UnauthorizedAccessTokenError unless access_token.valid?
 
       oauth_session = OAuth::Session.find_by(access_token_jti: access_token.jti)
