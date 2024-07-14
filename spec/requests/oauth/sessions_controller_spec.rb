@@ -109,7 +109,7 @@ RSpec.describe OAuth::SessionsController do
     end
 
     context 'when the params include a valid redirect_uri' do
-      let(:redirect_uri) { oauth_challenge.client_redirection_uri }
+      let(:redirect_uri) { oauth_challenge.redirect_uri }
 
       it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
         call_endpoint
@@ -173,7 +173,7 @@ RSpec.describe OAuth::SessionsController do
     end
 
     context 'when the params include a valid redirect_uri' do
-      let(:redirect_uri) { oauth_challenge.client_redirection_uri }
+      let(:redirect_uri) { oauth_challenge.redirect_uri }
 
       it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
         call_endpoint
@@ -296,7 +296,7 @@ RSpec.describe OAuth::SessionsController do
             oauth_authorization_grant:,
             code_challenge: nil,
             code_challenge_method: nil,
-            client_redirection_uri: nil
+            redirect_uri: nil
           )
         end
 
@@ -315,7 +315,7 @@ RSpec.describe OAuth::SessionsController do
             oauth_authorization_grant:,
             code_challenge: nil,
             code_challenge_method: nil,
-            client_redirection_uri: 'https://localhost:3000/'
+            redirect_uri: 'https://localhost:3000/'
           )
         end
 
@@ -335,7 +335,7 @@ RSpec.describe OAuth::SessionsController do
           create(
             :oauth_challenge,
             oauth_authorization_grant:,
-            client_redirection_uri: nil
+            redirect_uri: nil
           )
         end
 
@@ -380,7 +380,7 @@ RSpec.describe OAuth::SessionsController do
         .to have_received(:warn)
         .with(
           I18n.t(
-            'oauth.revoked_session_error',
+            'oauth.errors.revoked_session',
             client_id: oauth_authorization_grant.oauth_client.id,
             refreshed_session_id: oauth_session.id,
             revoked_session_id: oauth_session.id,
@@ -410,7 +410,7 @@ RSpec.describe OAuth::SessionsController do
         .to have_received(:warn)
         .with(
           I18n.t(
-            'oauth.revoked_session_error',
+            'oauth.errors.revoked_session',
             client_id: oauth_authorization_grant.oauth_client.id,
             refreshed_session_id: oauth_session.id,
             revoked_session_id: active_oauth_session.id,

@@ -73,7 +73,7 @@ RSpec.describe OAuth::AuthorizationGrant do # rubocop:disable RSpec/FilePath
   shared_examples 'validates the redirect_uri' do
     let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:) }
     let!(:oauth_challenge) do # rubocop:disable RSpec/LetSetup
-      create(:oauth_challenge, client_redirection_uri: redirect_uri, oauth_authorization_grant:)
+      create(:oauth_challenge, redirect_uri:, oauth_authorization_grant:)
     end
     let(:redirect_uri) { 'not-a-valid-redirect-uri' }
 

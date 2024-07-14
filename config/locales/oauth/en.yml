@@ -1,4 +1,149 @@
 en:
+  activerecord:
+    models:
+      oauth/authorization_grant: 'Authorization grant'
+      oauth/challenge: 'Challenge'
+      oauth/client: 'Client'
+      oauth/session: 'Session'
+    attributes:
+      oauth/authorization_grant:
+        oauth_client_id: 'OAuth client ID'
+        redeemed: 'Redeemed'
+        user_id: 'User ID'
+      oauth/challenge:
+        code_challenge: 'Code challenge'
+        code_challenge_method: 'Code challenge method'
+        oauth_authorization_grant_id: 'OAuth authorization grant ID'
+        redirect_uri: 'Redirect URI'
+      oauth/client:
+        access_token_duration: 'Access token duration'
+        api_key: 'API key'
+        client_type: 'Client type'
+        name: 'Name'
+        redirect_uri: 'Redirect URI'
+        refresh_token_duration: 'Refresh token duration'
+      oauth/session:
+        access_token_jti: 'Access token JTI'
+        client_id: 'Client ID'
+        expires_at: 'Expires at'
+        oauth_authorization_grant_id: 'OAuth authorization grant ID'
+        status: 'Status'
+        refresh_token_jti: 'Refresh token JTI'
+        user_id: 'User ID'
+    errors:
+      models:
+        oauth/authorization_grant:
+          attributes:
+            oauth_client_id:
+              blank: 'must be linked to a client'
+            user_id:
+              blank: 'must be linked to a user'
+        oauth/challenge:
+          attributes:
+            code_challenge:
+              blank: 'is required for PKCE'
+              failed_challenge: 'failed validation'
+              requires_code_verifier: 'must be validated against a code_verifier'
+            code_challenge_method:
+              blank: 'is required for PKCE'
+              invalid: 'must be a supported code challenge method'
+            oauth_authorization_grant_id:
+              blank: 'must be linked to an authorization grant'
+            redirect_uri:
+              blank: 'must be provided if sent in the original authorization request'
+              invalid: 'must be a supported code challenge method'
+        oauth/client:
+          redirect_uri:
+            invalid_http_scheme: 'must contain valid HTTP(S) scheme in URI'
+            invalid_uri: 'must be a valid URI'
+        oauth/session:
+          access_token_jti:
+            invalid: 'must be a valid UUID'
+          client_id:
+              blank: 'must be linked to a client'
+          oauth_authorization_grant_id:
+              blank: 'must be linked to an authorization grant'
+          refresh_token_jti:
+            invalid: 'must be a valid UUID'
+          user_id:
+              blank: 'must be linked to a user'
+  activemodel:
+    models:
+      oauth/access_token: 'Access token'
+      oauth/authorization_request: 'Authorization request'
+      oauth/refresh_token: 'Refresh token'
+    attributes:
+      oauth/access_token:
+        aud: 'Audience (aud)'
+        exp: 'Expires at (exp)'
+        iat: 'Issued at (iat)'
+        iss: 'Issuer (iss)'
+        jti: 'JTI (jti)'
+        user_id: 'User ID'
+      oauth/authorization_request:
+        client_id: 'Client ID'
+        code_challenge: 'Code challenge'
+        code_challenge_method: 'Code challenge method'
+        oauth_client: 'OAuth client'
+        redirect_uri: 'Redirect URI'
+        response_type: 'Response type'
+        state: 'State'
+      oauth/refresh_token:
+        aud: 'Audience (aud)'
+        exp: 'Expires at (exp)'
+        iat: 'Issued at (iat)'
+        iss: 'Issuer (iss)'
+        jti: 'JTI (jti)'
+    errors:
+      models:
+        oauth/access_token:
+          attributes:
+            aud:
+              blank: 'claim not present in token'
+              invalid: 'claim does not match server configuration'
+            exp:
+              blank: 'claim not present in token'
+              expired: 'is in the past'
+            iss:
+              blank: 'claim not present in token'
+              invalid: 'claim does not match server configuration'
+            jti:
+              blank: 'claim not present in token'
+            user_id:
+              blank: 'claim not present in token'
+        oauth/authorization_request:
+          client_id:
+            blank: 'must be provided as a param in the request to authorize when client is public'
+            unregistered_client: 'does not map to a registered client'
+          code_challenge:
+            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+          code_challenge_method:
+            invalid: 'must be a supported code challenge method'
+            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+          oauth_client:
+            invalid: 'must be initiated by a client'
+          redirect_uri:
+            blank: 'must be provided as a param in the request to authorize when client is public'
+            invalid: 'must match redirect_uri configured for client'
+          response_type:
+            blank: 'must be provided as a param in the request to authorize'
+            invalid: 'must be a supported response type'
+          state:
+        oauth/refresh_token:
+          attributes:
+            aud:
+              blank: 'claim not present in token'
+              invalid: 'claim does not match server configuration'
+            exp:
+              blank: 'claim not present in token'
+              expired: 'is in the past'
+            iss:
+              blank: 'claim not present in token'
+              invalid: 'claim does not match server configuration'
+            jti:
+              blank: 'claim not present in token'
   oauth:
     authorization_grants:
       new:
@@ -9,7 +154,8 @@ en:
     client_error:
       title: 'Client Error'
       lede: 'The request provided by the client to this server is malformed. Please report this error through the client support channel.'
-    server_error:
+    errors:
+      invalid_grant: 'The authorization grant is invalid'
+      mismatched_refresh_token: 'The provided refresh token JTI does not match the refresh token JTI of the target OAuthSession.'
       oauth_session_failure: 'Failed to create OAuthSession. Errors: %{errors}'
-    mismatched_refresh_token_error: 'The provided refresh token JTI does not match the refresh token JTI of the target OAuthSession.'
-    revoked_session_error: 'Refresh token replay attack detected. Refreshed OAuthSession: %{refreshed_session_id}, Revoked OAuthSession: %{revoked_session_id}, Client ID: %{client_id}, User ID: %{user_id}'
+      revoked_session: 'Refresh token replay attack detected. Refreshed OAuthSession: %{refreshed_session_id}, Revoked OAuthSession: %{revoked_session_id}, Client ID: %{client_id}, User ID: %{user_id}'

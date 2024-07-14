@@ -29,7 +29,7 @@ module OAuth
         TokenContainer[access_token.to_encoded_token, refresh_token.to_encoded_token, access_token.exp]
       else
         errors = oauth_session.errors.full_messages.join(', ')
-        raise OAuth::ServerError, I18n.t('oauth.server_error.oauth_session_failure', errors:)
+        raise OAuth::ServerError, I18n.t('oauth.errors.oauth_session_failure', errors:)
       end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength

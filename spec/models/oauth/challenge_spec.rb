@@ -26,50 +26,55 @@ RSpec.describe OAuth::Challenge do # rubocop:disable RSpec/FilePath
     end
   end
 
-  describe '#validate_code_verifier!' do
-    subject(:method_call) { model.validate_code_verifier!(code_verifier:) }
+  describe '#validate_code_challenge' do
+    subject(:method_call) { model.validate_code_challenge(code_verifier:) }
 
     let(:code_verifier) { 'code_verifier' }
 
     context 'when valid code verifier is provided' do
-      it 'does not raise an error' do
-        expect { method_call }.not_to raise_error
+      it 'does not add an error' do
+        method_call
+        expect(model.errors).to be_empty
       end
     end
 
     context 'when an empty code verifier is provided' do
       let(:code_verifier) { '' }
 
-      it 'raises an error' do
-        expect { method_call }.to raise_error(OAuth::InvalidCodeVerifierError)
+      it 'adds an error' do
+        method_call
+        expect(model.errors.where(:code_challenge)).to be_present
       end
     end
 
     context 'when invalid code verifier is provided' do
       let(:code_verifier) { 'invalid_code_verifier' }
 
-      it 'raises an error' do
-        expect { method_call }.to raise_error(OAuth::InvalidCodeVerifierError)
+      it 'adds an error' do
+        method_call
+        expect(model.errors.where(:code_challenge)).to be_present
       end
     end
   end
 
-  describe '#validate_redirection_uri!' do
-    subject(:method_call) { model.validate_redirection_uri!(redirection_uri:) }
+  describe '#validate_redirect_uri' do
+    subject(:method_call) { model.validate_redirect_uri(redirection_uri:) }
 
-    let(:redirection_uri) { model.client_redirection_uri }
+    let(:redirection_uri) { model.redirect_uri }
 
     context 'when valid redirection_uri is provided' do
-      it 'does not raise an error' do
-        expect { method_call }.not_to raise_error
+      it 'does not add an error' do
+        method_call
+        expect(model.errors).to be_empty
       end
     end
 
-    context 'when redirection_uri does not match client_redirection_uri' do
+    context 'when redirection_uri does not match client redirect_uri' do
       let(:redirection_uri) { 'http://not-valid.uri/for/challenge' }
 
-      it 'raises an error' do
-        expect { method_call }.to raise_error(OAuth::InvalidRedirectionURIError)
+      it 'adds an error' do
+        method_call
+        expect(model.errors.where(:redirect_uri)).to be_present
       end
     end
   end

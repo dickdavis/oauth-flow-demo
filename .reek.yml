@@ -87,6 +87,7 @@ detectors:
       - StateTokenEncoderService#initialize
   UtilityFunction:
     exclude:
+      - OAuth::InvalidGrantError#message
       - OAuth::SessionCreatable#generate_token
       - OAuth::SessionExchangeable#valid_resource?
       - OAuth::SessionExchangeable#valid_subject_token_type?

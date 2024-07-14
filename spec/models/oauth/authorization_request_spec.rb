@@ -123,7 +123,7 @@ RSpec.describe OAuth::AuthorizationRequest do # rubocop:disable RSpec/FilePath
           expect(model).not_to be_valid
           expect(model.errors.count).to eq(1)
           expect(model.errors.first.attribute).to eq(:oauth_client)
-          expect(model.errors.first.message).to be('is invalid')
+          expect(model.errors.first.message).to eq('is invalid')
         end
       end
     end

@@ -27,16 +27,20 @@ module OAuth
       oauth_sessions.created_status.order(created_at: :desc).first
     end
 
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
     def redeem(redirection_uri:, code_verifier: nil)
-      raise OAuth::AuthorizationCodeRedeemedError, 'Authorization code has already been redeemed' if redeemed?
+      raise OAuth::InvalidGrantError if redeemed?
 
       if oauth_client.public_client_type? || oauth_challenge.code_challenge.present?
-        oauth_challenge.validate_code_verifier!(code_verifier:)
+        oauth_challenge.validate_code_challenge(code_verifier:)
       end
 
-      if oauth_client.public_client_type? || oauth_challenge.client_redirection_uri.present?
-        oauth_challenge.validate_redirection_uri!(redirection_uri:)
+      if oauth_client.public_client_type? || oauth_challenge.redirect_uri.present?
+        oauth_challenge.validate_redirect_uri(redirection_uri:)
+      end
+
+      if oauth_challenge.errors.any?
+        raise OAuth::UnsuccessfulChallengeError, oauth_challenge.errors.full_messages.join(', ')
       end
 
       create_oauth_session(authorization_grant: self) do
@@ -44,12 +48,8 @@ module OAuth
       end
     rescue OAuth::ServerError => error
       raise OAuth::ServerError, error.message
-    rescue OAuth::AuthorizationCodeRedeemedError
-      raise OAuth::InvalidGrantError
-    rescue OAuth::InvalidCodeVerifierError, OAuth::InvalidRedirectionURIError => error
-      raise OAuth::UnsuccessfulChallengeError, error.message
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
 
     private
 

@@ -16,6 +16,10 @@ module OAuth
 
     VALID_UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/i
 
+    belongs_to :oauth_authorization_grant, class_name: 'OAuth::AuthorizationGrant'
+
+    enum status: STATUS_ENUM_VALUES, _suffix: true
+
     delegate :user_id, to: :oauth_authorization_grant
 
     validates :access_token_jti, presence: true, uniqueness: true, format: { with: VALID_UUID_REGEX }
@@ -24,13 +28,9 @@ module OAuth
     validates :refresh_token_jti, presence: true, uniqueness: true, format: { with: VALID_UUID_REGEX }
     encrypts :refresh_token_jti, deterministic: true
 
-    belongs_to :oauth_authorization_grant, class_name: 'OAuth::AuthorizationGrant'
-
-    enum status: STATUS_ENUM_VALUES, _suffix: true
-
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def refresh(token:, client_id:)
-      raise OAuth::ServerError, I18n.t('oauth.mismatched_refresh_token_error') unless token.jti == refresh_token_jti
+      raise OAuth::ServerError, I18n.t('oauth.errors.mismatched_refresh_token') unless token.jti == refresh_token_jti
       raise OAuth::InvalidGrantError unless token.valid?
 
       # Detect stolen refresh token and replay attacks, and then revoke current active oauth session

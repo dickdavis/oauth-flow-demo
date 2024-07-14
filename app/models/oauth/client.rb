@@ -50,9 +50,9 @@ module OAuth
 
     def redirect_uri_is_valid_uri
       uri = URI.parse(redirect_uri)
-      errors.add(:redirect_uri, 'must contain HTTP scheme') unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+      errors.add(:redirect_uri, :invalid_http_scheme) unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
     rescue URI::InvalidURIError
-      errors.add(:redirect_uri, 'is not a valid URI')
+      errors.add(:redirect_uri, :invalid_uri)
     end
 
     def generate_api_key

@@ -25,9 +25,9 @@ module OAuth
       grant = @oauth_client.new_authorization_grant(
         user: current_user,
         challenge_params: {
-          client_redirection_uri: @authorization_request.redirect_uri,
           code_challenge: @authorization_request.code_challenge,
-          code_challenge_method: @authorization_request.code_challenge_method
+          code_challenge_method: @authorization_request.code_challenge_method,
+          redirect_uri: @authorization_request.redirect_uri
         }
       )
 

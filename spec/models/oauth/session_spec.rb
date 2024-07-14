@@ -76,7 +76,7 @@ RSpec.describe OAuth::Session do # rubocop:disable RSpec/FilePath
 
       it 'does not refresh the OAuth session and raises an OAuth::ServerError' do
         aggregate_failures do
-          expect { method_call }.to raise_error(OAuth::ServerError, I18n.t('oauth.mismatched_refresh_token_error'))
+          expect { method_call }.to raise_error(OAuth::ServerError, I18n.t('oauth.errors.mismatched_refresh_token'))
           expect(described_class.count).to eq(1)
         end
       end

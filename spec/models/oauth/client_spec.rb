@@ -95,7 +95,7 @@ RSpec.describe OAuth::Client do # rubocop:disable RSpec/FilePath
         expect(object.user).to eq(user)
         expect(object.oauth_challenge.code_challenge).to eq(challenge_params[:code_challenge])
         expect(object.oauth_challenge.code_challenge_method).to eq(challenge_params[:code_challenge_method])
-        expect(object.oauth_challenge.client_redirection_uri).to eq(challenge_params[:client_redirection_uri])
+        expect(object.oauth_challenge.redirect_uri).to eq(challenge_params[:redirect_uri])
       end
     end
   end

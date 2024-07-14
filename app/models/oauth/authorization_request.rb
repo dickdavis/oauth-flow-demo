@@ -48,17 +48,17 @@ module OAuth
     private
 
     def oauth_client_must_be_valid
-      errors.add(:oauth_client, 'is invalid') unless valid_oauth_client?
+      errors.add(:oauth_client, :invalid) unless valid_oauth_client?
     end
 
     def client_id_must_be_valid
       return unless oauth_client.is_a?(OAuth::Client)
       return if oauth_client.confidential_client_type? && client_id.blank?
 
-      errors.add(:client_id, 'is required') and return if client_id.blank?
+      errors.add(:client_id, :blank) and return if client_id.blank?
 
       client = OAuth::Client.find_by(id: client_id)
-      errors.add(:client_id, 'does not map to an existing client') unless client
+      errors.add(:client_id, :unregistered_client) unless client
     end
 
     def pkce_params_must_be_valid
@@ -73,23 +73,23 @@ module OAuth
       return unless valid_oauth_client?
       return unless oauth_client.public_client_type?
 
-      validate_pkce_params
+      errors.add(:code_challenge, :required_for_public_clients) if code_challenge.blank?
+      errors.add(:code_challenge_method, :required_for_public_clients) if code_challenge_method.blank?
+      errors.add(:code_challenge_method, :invalid) unless code_challenge_method.in?(VALID_CODE_CHALLENGE_METHODS)
     end
 
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
     def validate_confidential_pkce_params
       return unless valid_oauth_client?
       unless oauth_client.confidential_client_type? && (code_challenge.present? || code_challenge_method.present?)
         return
       end
 
-      validate_pkce_params
+      errors.add(:code_challenge, :required_if_other_pkce_params_present) if code_challenge.blank?
+      errors.add(:code_challenge_method, :required_if_other_pkce_params_present) if code_challenge_method.blank?
+      errors.add(:code_challenge_method, :invalid) unless code_challenge_method.in?(VALID_CODE_CHALLENGE_METHODS)
     end
-
-    def validate_pkce_params
-      errors.add(:code_challenge, 'is required') if code_challenge.blank?
-      errors.add(:code_challenge_method, 'is required') if code_challenge_method.blank?
-      errors.add(:code_challenge_method, 'is invalid') unless code_challenge_method.in?(VALID_CODE_CHALLENGE_METHODS)
-    end
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
 
     def redirect_uri_must_be_valid
       return unless valid_oauth_client?
@@ -102,7 +102,7 @@ module OAuth
     end
 
     def validate_public_client_redirect_uri
-      errors.add(:redirect_uri, 'is required') if redirect_uri.blank?
+      errors.add(:redirect_uri, :blank) if redirect_uri.blank?
       validate_redirect_uris_match
     end
 
@@ -113,7 +113,7 @@ module OAuth
     end
 
     def validate_redirect_uris_match
-      errors.add(:redirect_uri, 'is not a valid') unless oauth_client.redirect_uri == redirect_uri
+      errors.add(:redirect_uri, :invalid) unless oauth_client.redirect_uri == redirect_uri
     end
 
     def valid_oauth_client?

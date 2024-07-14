@@ -70,7 +70,7 @@ RSpec.shared_examples 'a model that creates OAuth sessions' do
     it 'raises an OAuth::ServerError' do
       expect { method_call }.to raise_error(
         OAuth::ServerError,
-        "Failed to create OAuthSession. Errors: Access token jti can't be blank, Access token jti is invalid"
+        "Failed to create OAuthSession. Errors: Access token JTI can't be blank, Access token JTI is invalid"
       )
     end
   end

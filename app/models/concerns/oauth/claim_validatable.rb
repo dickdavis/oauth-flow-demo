@@ -24,7 +24,7 @@ module OAuth
       validate do
         next if exp.blank?
 
-        errors.add(:exp, 'is expired') if Time.zone.now > Time.zone.at(exp)
+        errors.add(:exp, :expired) if Time.zone.now > Time.zone.at(exp)
       end
 
       validates :iss, presence: true, format: { with: /\A#{OAuth::CONFIG.issuer_url}\z/ }

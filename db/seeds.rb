@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-client = OAuth::Client.find_or_initialize_by(name: 'Sample Client') do |c|
+confidential_client = OAuth::Client.find_or_initialize_by(name: 'Confidential Client') do |c|
   c.redirect_uri = 'http://localhost:3000/'
 end
-client.save if client.new_record?
+confidential_client.save if confidential_client.new_record?
 
-OAuth::Client.find_or_initialize_by(name: 'Public Client') do |c|
+public_client = OAuth::Client.find_or_initialize_by(name: 'Public Client') do |c|
   c.client_type = 'public'
   c.redirect_uri = 'http://localhost:3000/'
 end
+public_client.save if public_client.new_record?
