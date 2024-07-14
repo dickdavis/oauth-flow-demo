@@ -50,17 +50,22 @@ detectors:
     exclude:
       - API::BaseController#user_from_token
       - OAuth::AuthorizationGrant#redeem
+      - OAuth::AuthorizationRequest#client_id_must_be_valid
+      - OAuth::AuthorizationRequest#redirect_uri_must_be_valid
       - OAuth::SessionsController#refresh
   FeatureEnvy:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
       - OAuth::SessionCreatable#create_oauth_session
-  TooManyInstanceVariables:
-    exclude:
-      - StateTokenEncoderService
   MissingSafeMethod:
     exclude:
       - OAuth::Challenge
+  RepeatedConditional:
+    exclude: 
+      - OAuth::AuthorizationRequest
+  TooManyInstanceVariables:
+    exclude:
+      - StateTokenEncoderService
   TooManyStatements:
     exclude:
       - ClientRedirectUrlService#call
