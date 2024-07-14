@@ -10,19 +10,21 @@ module OAuth
     def authorize
       state = params[:state]
 
-      status, body = StateTokenEncoderService.call(
-        client_id: @oauth_client.id,
-        client_state: state,
+      authorization_request = @oauth_client.new_authorization_request(
+        client_id: params[:client_id],
         code_challenge: params[:code_challenge],
         code_challenge_method: params[:code_challenge_method],
-        response_type: params[:response_type]
-      ).deconstruct
+        redirect_uri: params[:redirect_uri],
+        response_type: params[:response_type],
+        state:
+      )
 
-      case status
-      when :ok
-        redirect_to new_oauth_authorization_grant_path(state: body)
-      when :invalid_request
-        params_for_redirect = { error: status, state: }.compact
+      if authorization_request.valid?
+        redirect_to new_oauth_authorization_grant_path(state: authorization_request.to_internal_state_token)
+      elsif authorization_request.errors.where(:redirect_uri).any?
+        head :bad_request and return
+      else
+        params_for_redirect = { error: :invalid_request, state: }.compact
         url = @oauth_client.url_for_redirect(params: params_for_redirect.compact)
         redirect_to url, allow_other_host: true
       end
