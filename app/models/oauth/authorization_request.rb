@@ -25,15 +25,15 @@ module OAuth
       attributes = JsonWebToken.decode(token)
       oauth_client = OAuth::Client.find_by(id: attributes[:oauth_client])
       new(
-        **attributes.except(:oauth_client).merge(oauth_client:)
+        **attributes.except(:oauth_client, :exp).merge(oauth_client:)
       )
     end
 
     def to_h
       {
         oauth_client: oauth_client.id,
-        client_id: client,
-        client_state:,
+        client_id:,
+        state:,
         code_challenge:,
         code_challenge_method:,
         redirect_uri:,
@@ -93,9 +93,26 @@ module OAuth
 
     def redirect_uri_must_be_valid
       return unless valid_oauth_client?
-      return if oauth_client.confidential_client_type? && redirect_uri.blank?
 
+      if oauth_client.public_client_type?
+        validate_public_client_redirect_uri
+      else
+        validate_confidential_client_redirect_uri
+      end
+    end
+
+    def validate_public_client_redirect_uri
       errors.add(:redirect_uri, 'is required') if redirect_uri.blank?
+      validate_redirect_uris_match
+    end
+
+    def validate_confidential_client_redirect_uri
+      return if redirect_uri.blank?
+
+      validate_redirect_uris_match
+    end
+
+    def validate_redirect_uris_match
       errors.add(:redirect_uri, 'is not a valid') unless oauth_client.redirect_uri == redirect_uri
     end
 

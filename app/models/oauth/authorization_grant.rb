@@ -19,6 +19,8 @@ module OAuth
             inverse_of: :oauth_authorization_grant,
             dependent: :destroy
 
+    accepts_nested_attributes_for :oauth_challenge
+
     before_validation :generate_expires_at
 
     def active_oauth_session

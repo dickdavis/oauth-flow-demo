@@ -81,6 +81,45 @@ RSpec.describe OAuth::Client do # rubocop:disable RSpec/FilePath
     end
   end
 
+  describe '#new_authorization_grant' do
+    subject(:call_method) { model.new_authorization_grant(user:, challenge_params:) }
+
+    let(:user) { create(:user) }
+    let(:challenge_params) { attributes_for(:oauth_challenge) }
+
+    it 'returns an OAuth::AuthorizationGrant with appropriate values' do
+      object = call_method
+      aggregate_failures do
+        expect(object).to be_a(OAuth::AuthorizationGrant)
+        expect(object.oauth_client).to eq(model)
+        expect(object.user).to eq(user)
+        expect(object.oauth_challenge.code_challenge).to eq(challenge_params[:code_challenge])
+        expect(object.oauth_challenge.code_challenge_method).to eq(challenge_params[:code_challenge_method])
+        expect(object.oauth_challenge.client_redirection_uri).to eq(challenge_params[:client_redirection_uri])
+      end
+    end
+  end
+
+  describe '#new_authorization_request' do
+    subject(:call_method) { model.new_authorization_request(**request_attrs.except(:oauth_client)) }
+
+    let(:user) { create(:user) }
+    let(:request_attrs) { attributes_for(:oauth_authorization_request, client_id: model.id, oauth_client: model) }
+
+    it 'returns an OAuth::AuthorizationRequest with appropriate values' do
+      object = call_method
+      aggregate_failures do
+        expect(object).to be_a(OAuth::AuthorizationRequest)
+        expect(object.client_id).to eq(model.id)
+        expect(object.code_challenge).to eq(request_attrs[:code_challenge])
+        expect(object.code_challenge_method).to eq(request_attrs[:code_challenge_method])
+        expect(object.redirect_uri).to eq(request_attrs[:redirect_uri])
+        expect(object.response_type).to eq(request_attrs[:response_type])
+        expect(object.state).to eq(request_attrs[:state])
+      end
+    end
+  end
+
   describe '#url_for_redirect' do
     context 'with valid params' do
       let(:params) { { foo: 'bar' } }

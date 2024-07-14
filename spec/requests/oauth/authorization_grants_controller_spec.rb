@@ -7,7 +7,9 @@ RSpec.describe OAuth::AuthorizationGrantsController do
     subject(:call_endpoint) { get new_oauth_authorization_grant_path, params: { state: } }
 
     let_it_be(:user) { create(:user) }
-    let(:state) { JsonWebToken.encode({ client_id: oauth_client.id }) }
+
+    let(:state) { authorization_request.to_internal_state_token }
+    let(:authorization_request) { build(:oauth_authorization_request, oauth_client:, client_id: oauth_client.id) }
 
     before_all do
       sign_in(user)
@@ -23,9 +25,7 @@ RSpec.describe OAuth::AuthorizationGrantsController do
     end
 
     context 'when the oauth client type is confidential' do
-      let_it_be(:oauth_client) { create(:oauth_client, client_type: 'public') }
-
-      it_behaves_like 'an endpoint that requires user authentication'
+      let_it_be(:oauth_client) { create(:oauth_client, client_type: 'confidential') }
 
       it 'renders a successful response' do
         call_endpoint
@@ -34,22 +34,45 @@ RSpec.describe OAuth::AuthorizationGrantsController do
     end
   end
 
+  shared_examples 'handles user authorization approval' do
+    context 'when the authorization grant is successfully created' do
+      it 'creates an authorization grant and redirects to client redirection_uri with state and code params' do
+        aggregate_failures do
+          expect { call_endpoint }.to change(OAuth::AuthorizationGrant, :count)
+          expect(response).to redirect_to("http://localhost:3000/?code=#{OAuth::AuthorizationGrant.last.id}&state=#{authorization_request.state}")
+        end
+      end
+    end
+
+    context 'when the authorization grant fails to create' do
+      before do
+        allow_any_instance_of(OAuth::AuthorizationGrant).to receive(:save).and_return(false) # rubocop:disable RSpec/AnyInstance
+      end
+
+      it 'redirects to client redirection_uri with state and error params' do
+        call_endpoint
+        expect(response).to redirect_to("http://localhost:3000/?error=invalid_request&state=#{authorization_request.state}")
+      end
+    end
+  end
+
+  shared_examples 'handles user authorization rejection' do
+    let(:approve) { 'false' }
+
+    it 'redirects to client redirection_uri with state and error params' do
+      call_endpoint
+      expect(response).to redirect_to("http://localhost:3000/?error=access_denied&state=#{authorization_request.state}")
+    end
+  end
+
   describe 'POST /create' do
     subject(:call_endpoint) { post oauth_authorization_grants_path, params: { state:, approve: } }
 
     let_it_be(:user) { create(:user) }
+
     let(:approve) { 'true' }
-    let(:state) do
-      JsonWebToken.encode(
-        {
-          client_id: oauth_client.id,
-          client_state: 'foo',
-          code_challenge: 'bar',
-          code_challenge_method: 'S256',
-          redirect_uri: oauth_client.redirect_uri
-        }
-      )
-    end
+    let(:state) { authorization_request.to_internal_state_token }
+    let(:authorization_request) { build(:oauth_authorization_request, oauth_client:, client_id: oauth_client.id) }
 
     before_all do
       sign_in(user)
@@ -58,42 +81,15 @@ RSpec.describe OAuth::AuthorizationGrantsController do
     context 'when the oauth client type is public' do
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'public') }
 
-      context 'when the resource owner approves the authorization grant' do
-        context 'when the authorization grant is successfully created' do
-          it 'creates an authorization grant and redirects to client redirection_uri with state and code params' do
-            aggregate_failures do
-              expect { call_endpoint }.to change(OAuth::AuthorizationGrant, :count)
-              expect(response).to redirect_to("http://localhost:3000/?code=#{OAuth::AuthorizationGrant.last.id}&state=foo")
-            end
-          end
-        end
-
-        context 'when the authorization grant fails to create' do
-          before do
-            allow_any_instance_of(OAuth::AuthorizationGrant).to receive(:save!).and_raise(ActiveRecord::RecordInvalid) # rubocop:disable RSpec/AnyInstance
-          end
-
-          it 'redirects to client redirection_uri with state and error params' do
-            call_endpoint
-            expect(response).to redirect_to('http://localhost:3000/?error=invalid_request&state=foo')
-          end
-        end
-      end
-
-      context 'when the resource owner rejects the authorization grant' do
-        let(:approve) { 'false' }
-
-        it 'redirects to client redirection_uri with state and error params' do
-          call_endpoint
-          expect(response).to redirect_to('http://localhost:3000/?error=access_denied&state=foo')
-        end
-      end
+      it_behaves_like 'handles user authorization approval'
+      it_behaves_like 'handles user authorization rejection'
     end
 
     context 'when the oauth client type is confidential' do
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'confidential') }
 
-      it_behaves_like 'an endpoint that requires user authentication'
+      it_behaves_like 'handles user authorization approval'
+      it_behaves_like 'handles user authorization rejection'
     end
   end
 end

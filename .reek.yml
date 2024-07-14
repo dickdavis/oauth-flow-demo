@@ -57,6 +57,9 @@ detectors:
     exclude:
       - ClientAuthentication#http_basic_auth_successful?
       - OAuth::SessionCreatable#create_oauth_session
+  LongParameterList:
+    exclude:
+      - OAuth::Client#new_authorization_request
   MissingSafeMethod:
     exclude:
       - OAuth::Challenge

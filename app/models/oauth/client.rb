@@ -18,6 +18,24 @@ module OAuth
 
     before_create :generate_api_key
 
+    def new_authorization_grant(user:, challenge_params: {})
+      OAuth::AuthorizationGrant.create(oauth_client: self, user:, oauth_challenge_attributes: challenge_params)
+    end
+
+    # rubocop:disable Metrics/ParameterLists
+    def new_authorization_request(client_id:, code_challenge:, code_challenge_method:, redirect_uri:, response_type:, state:) # rubocop:disable Layout/LineLength
+      OAuth::AuthorizationRequest.new(
+        oauth_client: self,
+        client_id:,
+        state:,
+        code_challenge:,
+        code_challenge_method:,
+        redirect_uri:,
+        response_type:
+      )
+    end
+    # rubocop:enable Metrics/ParameterLists
+
     def url_for_redirect(params:)
       uri = URI(redirect_uri)
       params_for_query = params.collect { |key, value| [key.to_s, value] }

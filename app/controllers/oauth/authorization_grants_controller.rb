@@ -5,52 +5,46 @@ module OAuth
   # Controller for granting authorization to clients
   class AuthorizationGrantsController < BaseController
     before_action :authenticate_user
-    before_action :set_decoded_state
-    before_action -> { load_oauth_client(id: @decoded_state[:client_id]) }
+    before_action :set_authorization_request
+    before_action :set_oauth_client
 
     def new
-      state = params[:state]
+      state = @authorization_request.to_internal_state_token
       client_name = @oauth_client.name
       render :new, locals: { state:, client_name: }
     end
 
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
     def create
-      client_state = @decoded_state[:client_state]
+      state = @authorization_request.state
 
-      raise OAuth::AccessDenied unless ActiveModel::Type::Boolean.new.cast(params[:approve])
-
-      grant = nil
-      challenge = nil
-
-      ActiveRecord::Base.transaction do
-        grant = OAuth::AuthorizationGrant.new(oauth_client: @oauth_client, user: current_user)
-
-        if @oauth_client.public_client_type?
-          challenge = OAuth::Challenge.new(
-            code_challenge: @decoded_state[:code_challenge],
-            code_challenge_method: @decoded_state[:code_challenge_method],
-            client_redirection_uri: @decoded_state[:redirect_uri],
-            oauth_authorization_grant: grant
-          )
-        end
-
-        grant.save!
-        challenge&.save!
+      unless ActiveModel::Type::Boolean.new.cast(params[:approve])
+        redirect_to_client(params_for_redirect: { error: 'access_denied', state: }) and return
       end
 
-      redirect_to_client(params_for_redirect: { code: grant.id, state: client_state })
-    rescue OAuth::AccessDenied
-      redirect_to_client(params_for_redirect: { error: 'access_denied', state: client_state })
-    rescue ActiveRecord::RecordInvalid
-      redirect_to_client(params_for_redirect: { error: 'invalid_request', state: client_state })
+      grant = @oauth_client.new_authorization_grant(
+        user: current_user,
+        challenge_params: {
+          client_redirection_uri: @authorization_request.redirect_uri,
+          code_challenge: @authorization_request.code_challenge,
+          code_challenge_method: @authorization_request.code_challenge_method
+        }
+      )
+
+      redirect_to_client(params_for_redirect: { code: grant.id, state: }) and return if grant.persisted?
+
+      redirect_to_client(params_for_redirect: { error: 'invalid_request', state: })
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
 
     private
 
-    def set_decoded_state
-      @decoded_state = JsonWebToken.decode(params[:state])
+    def set_authorization_request
+      @authorization_request = OAuth::AuthorizationRequest.from_internal_state_token(params[:state])
+    end
+
+    def set_oauth_client
+      @oauth_client = @authorization_request.oauth_client
     end
 
     def redirect_to_client(params_for_redirect:)
