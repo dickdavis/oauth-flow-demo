@@ -1,25 +1,7 @@
 development:
   audience_url: 'http://localhost:3000/api/'
   issuer_url: 'http://localhost:3000/'
-  access_token_expiration: 5 # In minutes
-  refresh_token_expiration: 20160 # In minutes (14 days)
-  clients:
-    democlient:
-      name: 'Demo Client'
-      type: 'confidential'
-      redirection_uri: 'http://localhost:3000/'
 
 test:
   audience_url: 'http://localhost:3000/api/'
   issuer_url: 'http://localhost:3000/'
-  access_token_expiration: 5 # In minutes
-  refresh_token_expiration: 20160 # In minutes (14 days)
-  clients:
-    democlient:
-      name: 'Demo Client'
-      type: 'confidential'
-      redirection_uri: 'http://localhost:3000/'
-    negativetestclient:
-      name: 'Negative Test Client'
-      type: 'confidential'
-      redirection_uri: 'http://localhost:3000/'

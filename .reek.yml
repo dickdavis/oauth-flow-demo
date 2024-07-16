@@ -33,6 +33,8 @@ directories:
     UtilityFunction:
       enabled: false
   "db/migrate":
+    DuplicateMethodCall:
+      enabled: false
     FeatureEnvy:
       enabled: false
     TooManyStatements:
@@ -41,6 +43,29 @@ directories:
     UtilityFunction:
       enabled: false
 detectors:
+  ControlParameter:
+    exclude:
+      - OAuth::BaseController#authenticate_client
+  DuplicateMethodCall:
+    exclude:
+      - API::BaseController#user_from_token
+      - OAuth::AuthorizationGrant#redeem
+      - OAuth::AuthorizationRequest#client_id_must_be_valid
+      - OAuth::AuthorizationRequest#redirect_uri_must_be_valid
+      - OAuth::SessionsController#refresh
+  FeatureEnvy:
+    exclude:
+      - ClientAuthentication#http_basic_auth_successful?
+      - OAuth::SessionCreatable#create_oauth_session
+  LongParameterList:
+    exclude:
+      - OAuth::Client#new_authorization_request
+  MissingSafeMethod:
+    exclude:
+      - OAuth::Challenge
+  RepeatedConditional:
+    exclude: 
+      - OAuth::AuthorizationRequest
   TooManyInstanceVariables:
     exclude:
       - StateTokenEncoderService
@@ -50,24 +75,19 @@ detectors:
       - API::BaseController#user_from_token
       - AuthorizationGrantsController#create
       - OAuth::AuthorizationsController#authorize
+      - OAuth::AuthorizationGrant#redeem
+      - OAuth::Client#url_for_redirect
       - OAuth::SessionsController#token
-      - OAuthSessionCreatable#create_oauth_session
-      - OAuthSession#refresh
+      - OAuth::SessionCreatable#create_oauth_session
+      - OAuth::SessionsController#exchange
+      - OAuth::SessionsController#refresh
+      - OAuth::Session#refresh
       - SessionsController#create
       - SessionsController#url_for_sign_in_redirect
       - StateTokenEncoderService#initialize
-  ControlParameter:
-    exclude:
-      - ClientAuthentication#http_basic_auth_successful?
-  FeatureEnvy:
-    exclude:
-      - AuthorizationGrantsController#create
-      - ClientAuthentication#http_basic_auth_successful?
-  DuplicateMethodCall:
-    exclude:
-      - AccessToken#valid_exp?
-      - API::BaseController#user_from_token
   UtilityFunction:
     exclude:
-      - OAuthSessionExchangeable#valid_resource?
-      - OAuthSessionExchangeable#valid_subject_token_type?
+      - OAuth::InvalidGrantError#message
+      - OAuth::SessionCreatable#generate_token
+      - OAuth::SessionExchangeable#valid_resource?
+      - OAuth::SessionExchangeable#valid_subject_token_type?

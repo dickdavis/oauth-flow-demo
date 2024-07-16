@@ -37,6 +37,6 @@ RSpec.describe User do
   end
 
   describe 'associations' do
-    it { is_expected.to have_many(:authorization_grants) }
+    it { is_expected.to have_many(:oauth_authorization_grants) }
   end
 end

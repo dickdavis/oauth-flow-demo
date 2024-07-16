@@ -39,6 +39,8 @@ gem 'jwt'
 # Use Redis adapter to run Action Cable in production
 gem 'redis', '~> 4.0'
 
+gem 'strong_migrations'
+
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
 
@@ -88,4 +90,5 @@ end
 group :test do
   gem 'shoulda-matchers'
   gem 'test-prof'
+  gem 'timecop'
 end

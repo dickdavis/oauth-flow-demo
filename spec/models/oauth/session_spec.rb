@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
+RSpec.describe OAuth::Session do # rubocop:disable RSpec/FilePath
   subject(:model) { build(:oauth_session) }
 
   describe 'validations' do
@@ -47,15 +47,18 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
   end
 
   describe 'associations' do
-    it { is_expected.to belong_to(:authorization_grant) }
+    it { is_expected.to belong_to(:oauth_authorization_grant) }
   end
 
   describe '#refresh' do
-    subject(:method_call) { oauth_session.refresh(token: refresh_token) }
+    subject(:method_call) { oauth_session.refresh(token: oauth_refresh_token, client_id:) }
 
-    let_it_be(:authorization_grant) { create(:authorization_grant, redeemed: true) }
-    let!(:oauth_session) { create(:oauth_session, authorization_grant:) }
-    let(:refresh_token) { build(:refresh_token, oauth_session:) }
+    let_it_be(:oauth_client) { create(:oauth_client) }
+    let_it_be(:oauth_authorization_grant) { create(:oauth_authorization_grant, redeemed: true, oauth_client:) }
+
+    let!(:oauth_session) { create(:oauth_session, oauth_authorization_grant:) }
+    let(:oauth_refresh_token) { build(:oauth_refresh_token, oauth_session:) }
+    let(:client_id) { oauth_client.id }
 
     it_behaves_like 'a model that creates OAuth sessions'
 
@@ -69,18 +72,18 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
     end
 
     context 'when the provided token contains a JTI that does not match the refresh token JTI of the OAuth session' do
-      let(:refresh_token) { build(:refresh_token, oauth_session:, jti: 'foobar') }
+      let(:oauth_refresh_token) { build(:oauth_refresh_token, oauth_session:, jti: 'foobar') }
 
       it 'does not refresh the OAuth session and raises an OAuth::ServerError' do
         aggregate_failures do
-          expect { method_call }.to raise_error(OAuth::ServerError, I18n.t('oauth.mismatched_refresh_token_error'))
+          expect { method_call }.to raise_error(OAuth::ServerError, I18n.t('oauth.errors.mismatched_refresh_token'))
           expect(described_class.count).to eq(1)
         end
       end
     end
 
     context 'when the provided token has invalid claims' do
-      let(:refresh_token) { build(:refresh_token, oauth_session:, exp: 14.days.ago.to_i) }
+      let(:oauth_refresh_token) { build(:oauth_refresh_token, oauth_session:, exp: 14.days.ago.to_i) }
 
       it 'does not refresh the session and raises an OAuth::InvalidGrantError' do
         aggregate_failures do
@@ -91,11 +94,11 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
     end
 
     context 'when the OAuth session has already been refreshed' do
-      let_it_be(:oauth_session) { create(:oauth_session, authorization_grant:, status: 'refreshed') }
+      let_it_be(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'refreshed') }
 
       context 'with an active OAuth session existing for authorization grant' do
         it 'revokes the OAuth session and raises an OAuth::RevokedSessionError' do
-          active_oauth_session = create(:oauth_session, authorization_grant:)
+          active_oauth_session = create(:oauth_session, oauth_authorization_grant:)
           aggregate_failures do
             expect { method_call }.to raise_error(OAuth::RevokedSessionError)
             expect(active_oauth_session.reload).to be_revoked_status
@@ -116,11 +119,11 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
     end
 
     context 'when the OAuth session has already been revoked' do
-      let_it_be(:oauth_session) { create(:oauth_session, authorization_grant:, status: 'revoked') }
+      let_it_be(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'revoked') }
 
       context 'with an active OAuth session existing for authorization grant' do
         it 'revokes the active OAuth session and raises an OAuth::RevokedSessionError' do
-          active_oauth_session = create(:oauth_session, authorization_grant:)
+          active_oauth_session = create(:oauth_session, oauth_authorization_grant:)
           aggregate_failures do
             expect { method_call }.to raise_error(OAuth::RevokedSessionError)
             expect(active_oauth_session.reload).to be_revoked_status
@@ -140,17 +143,29 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
         end
       end
     end
+
+    context 'when the provided client id does not match the client id associated with the OAuth session' do
+      let(:client_id) { 'foobar' }
+
+      it 'does not refresh the OAuth session and raises an OAuth::RevokedSessionError' do
+        aggregate_failures do
+          expect { method_call }.to raise_error(OAuth::RevokedSessionError)
+          expect(oauth_session.reload).to be_revoked_status
+          expect(described_class.count).to eq(1)
+        end
+      end
+    end
   end
 
   describe 'revocation' do
     RSpec.shared_examples 'a revocable OAuth session' do
-      let_it_be(:authorization_grant) { create(:authorization_grant, redeemed: true) }
+      let_it_be(:oauth_authorization_grant) { create(:oauth_authorization_grant, redeemed: true) }
 
       context 'when the OAuth session is the active OAuth session' do
-        let(:oauth_session) { create(:oauth_session, authorization_grant:) }
+        let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:) }
 
         it 'only revokes the active OAuth session' do
-          other_oauth_session = create(:oauth_session, authorization_grant:, status: 'refreshed')
+          other_oauth_session = create(:oauth_session, oauth_authorization_grant:, status: 'refreshed')
           aggregate_failures do
             expect do
               method_call
@@ -163,11 +178,14 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
       end
 
       context 'when the OAuth session is not the active OAuth session' do
-        let(:oauth_session) { create(:oauth_session, authorization_grant:, status: 'refreshed') }
+        let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'refreshed') }
 
+        # rubocop:disable RSpec/ExampleLength
         it 'only revokes all related OAuth sessions for the authorization grant' do
-          active_oauth_session = create(:oauth_session, authorization_grant:)
-          alt_oauth_session = create(:oauth_session, authorization_grant: create(:authorization_grant, redeemed: true))
+          active_oauth_session = create(:oauth_session, oauth_authorization_grant:)
+          alt_oauth_session = create(
+            :oauth_session, oauth_authorization_grant: create(:oauth_authorization_grant, redeemed: true)
+          )
           aggregate_failures do
             expect do
               method_call
@@ -177,6 +195,7 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
             expect(described_class.where(status: 'revoked').count).to eq(2)
           end
         end
+        # rubocop:enable RSpec/ExampleLength
       end
     end
 
@@ -192,13 +211,13 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
       let(:jti) { token.jti }
 
       context 'when provided an access token JTI' do
-        let(:token) { build(:access_token, oauth_session:) }
+        let(:token) { build(:oauth_access_token, oauth_session:) }
 
         it_behaves_like 'a revocable OAuth session'
       end
 
       context 'when provided a refresh token JTI' do
-        let(:token) { build(:refresh_token, oauth_session:) }
+        let(:token) { build(:oauth_refresh_token, oauth_session:) }
 
         it_behaves_like 'a revocable OAuth session'
       end
@@ -208,7 +227,7 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
       subject(:method_call) { described_class.revoke_for_access_token(access_token_jti:) }
 
       let(:access_token_jti) { token.jti }
-      let(:token) { build(:access_token, oauth_session:) }
+      let(:token) { build(:oauth_access_token, oauth_session:) }
 
       it_behaves_like 'a revocable OAuth session'
     end
@@ -217,7 +236,7 @@ RSpec.describe OAuthSession do # rubocop:disable RSpec/FilePath
       subject(:method_call) { described_class.revoke_for_refresh_token(refresh_token_jti:) }
 
       let(:refresh_token_jti) { token.jti }
-      let(:token) { build(:refresh_token, oauth_session:) }
+      let(:token) { build(:oauth_refresh_token, oauth_session:) }
 
       it_behaves_like 'a revocable OAuth session'
     end
