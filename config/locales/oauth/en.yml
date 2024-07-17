@@ -129,25 +129,26 @@ en:
               mismatched: 'does not match the redirect_uri from the authorize request'
               present_in_authorize: 'must be provided if sent in the original authorization request'
         oauth/authorization_request:
-          client_id:
-            blank: 'must be provided as a param in the request to authorize when client is public'
-            unregistered_client: 'does not map to a registered client'
-          code_challenge:
-            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
-            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
-          code_challenge_method:
-            invalid: 'must be a supported code challenge method'
-            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
-            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
-          oauth_client:
-            invalid: 'must be initiated by a client'
-          redirect_uri:
-            blank: 'must be provided as a param in the request to authorize when client is public'
-            invalid: 'must match redirect_uri configured for client'
-          response_type:
-            blank: 'must be provided as a param in the request to authorize'
-            invalid: 'must be a supported response type'
-          state:
+          attributes:
+            client_id:
+              blank: 'must be provided as a param in the request to authorize when client is public'
+              unregistered_client: 'does not map to a registered client'
+            code_challenge:
+              required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+              required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+            code_challenge_method:
+              invalid: 'must be a supported code challenge method'
+              required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+              required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+            oauth_client:
+              invalid: 'must be initiated by a client'
+            redirect_uri:
+              blank: 'must be provided as a param in the request to authorize when client is public'
+              invalid: 'must match redirect_uri configured for client'
+            response_type:
+              blank: 'must be provided as a param in the request to authorize'
+              invalid: 'must be a supported response type'
+            state:
         oauth/refresh_token:
           attributes:
             aud:

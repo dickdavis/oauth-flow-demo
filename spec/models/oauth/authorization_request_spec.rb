@@ -123,7 +123,7 @@ RSpec.describe OAuth::AuthorizationRequest do # rubocop:disable RSpec/FilePath
           expect(model).not_to be_valid
           expect(model.errors.count).to eq(1)
           expect(model.errors.first.attribute).to eq(:oauth_client)
-          expect(model.errors.first.message).to eq('is invalid')
+          expect(model.errors.first.type).to eq(:invalid)
         end
       end
     end
@@ -140,6 +140,7 @@ RSpec.describe OAuth::AuthorizationRequest do # rubocop:disable RSpec/FilePath
 
     context 'when OAuth client is confidential' do
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'confidential') }
+
       let(:client_id) { oauth_client.id }
 
       it_behaves_like 'validates response_type param'
