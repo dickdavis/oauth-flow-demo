@@ -7,20 +7,19 @@ module OAuth
     extend ActiveSupport::Concern
 
     TokenContainer = Data.define(:access_token, :refresh_token, :expiration)
-    Token = Data.define(:jti, :token)
 
     private
 
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-    def create_oauth_session(authorization_grant:)
-      oauth_client = authorization_grant.oauth_client
+    def create_oauth_session(grant:)
+      oauth_client = grant.oauth_client
       access_token_expiration = oauth_client.access_token_duration.seconds.from_now.to_i
       access_token = OAuth::AccessToken.default(user_id:, exp: access_token_expiration)
 
       refresh_token_expiration = oauth_client.refresh_token_duration.seconds.from_now.to_i
       refresh_token = OAuth::RefreshToken.default(exp: refresh_token_expiration)
 
-      oauth_session = authorization_grant.oauth_sessions.new(
+      oauth_session = grant.oauth_sessions.new(
         access_token_jti: access_token.jti, refresh_token_jti: refresh_token.jti
       )
 

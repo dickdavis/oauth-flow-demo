@@ -45,7 +45,7 @@ module OAuth
         )
       end
 
-      create_oauth_session(authorization_grant: oauth_authorization_grant) do
+      create_oauth_session(grant: oauth_authorization_grant) do
         update(status: 'refreshed')
       end
     rescue OAuth::ServerError => error
