@@ -40,96 +40,31 @@ RSpec.describe OAuth::AuthorizationGrant do # rubocop:disable RSpec/FilePath
     end
   end
 
-  shared_examples 'creates an OAuth session' do
-    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:) }
-    let!(:oauth_challenge) { create(:oauth_challenge, oauth_authorization_grant:) } # rubocop:disable RSpec/LetSetup
-
-    it_behaves_like 'a model that creates OAuth sessions'
-
+  shared_examples 'updates the redeemed attribute' do
     it 'updates the redeemed attribute and creates an OAuth session' do
       expect { method_call }.to change(oauth_authorization_grant, :redeemed).from(false).to(true)
                             .and change(OAuth::Session, :count).by(1)
     end
   end
 
-  shared_examples 'validates the PKCE challenge' do
-    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:) }
-    let!(:oauth_challenge) { create(:oauth_challenge, oauth_authorization_grant:) } # rubocop:disable RSpec/LetSetup
-    let(:code_verifier) { 'foobar' }
-
-    it 'raises an error' do
-      expect { method_call }.to raise_error(OAuth::UnsuccessfulChallengeError)
-    end
-
-    it 'does not create an OAuth session' do
-      expect do
-        method_call
-      rescue OAuth::UnsuccessfulChallengeError
-        nil
-      end.not_to change(OAuth::Session, :count)
-    end
-  end
-
-  shared_examples 'validates the redirect_uri' do
-    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:) }
-    let!(:oauth_challenge) do # rubocop:disable RSpec/LetSetup
-      create(:oauth_challenge, redirect_uri:, oauth_authorization_grant:)
-    end
-    let(:redirect_uri) { 'not-a-valid-redirect-uri' }
-
-    it 'raises an error' do
-      expect { method_call }.to raise_error(OAuth::UnsuccessfulChallengeError)
-    end
-
-    it 'does not create an OAuth session' do
-      expect do
-        method_call
-      rescue OAuth::UnsuccessfulChallengeError
-        nil
-      end.not_to change(OAuth::Session, :count)
-    end
-  end
-
-  shared_examples 'does not create sessions for authorizations grants that have been redeemed' do
-    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:, redeemed: true) }
-    let!(:oauth_challenge) { create(:oauth_challenge, oauth_authorization_grant:) } # rubocop:disable RSpec/LetSetup
-
-    it 'raises an error' do
-      expect { method_call }.to raise_error(OAuth::InvalidGrantError)
-    end
-
-    it 'does not create an OAuth session' do
-      expect do
-        method_call
-      rescue OAuth::InvalidGrantError
-        nil
-      end.not_to change(OAuth::Session, :count)
-    end
-  end
-
   describe '#redeem' do
-    subject(:method_call) { oauth_authorization_grant.redeem(**options.compact) }
+    subject(:method_call) { oauth_authorization_grant.redeem }
 
-    let(:options) { { code_verifier:, redirection_uri: } }
-    let(:code_verifier) { 'code_verifier' }
-    let(:redirection_uri) { oauth_client.redirect_uri }
+    let(:oauth_authorization_grant) { create(:oauth_authorization_grant, oauth_client:) }
+    let!(:oauth_challenge) { create(:oauth_challenge, oauth_authorization_grant:) } # rubocop:disable RSpec/LetSetup
 
     context 'when the oauth client has a public client type' do
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'public') }
 
-      it_behaves_like 'creates an OAuth session'
-      it_behaves_like 'validates the PKCE challenge'
-      it_behaves_like 'validates the redirect_uri'
-      it_behaves_like 'does not create sessions for authorizations grants that have been redeemed'
+      it_behaves_like 'a model that creates OAuth sessions'
+      it_behaves_like 'updates the redeemed attribute'
     end
 
     context 'when the oauth client has a confidential client type' do
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'confidential') }
 
-      it_behaves_like 'creates an OAuth session'
-      it_behaves_like 'validates the PKCE challenge'
-      it_behaves_like 'validates the redirect_uri'
-      it_behaves_like 'does not create sessions for authorizations grants that have been redeemed'
+      it_behaves_like 'a model that creates OAuth sessions'
+      it_behaves_like 'updates the redeemed attribute'
     end
   end
 end

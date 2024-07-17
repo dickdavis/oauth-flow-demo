@@ -27,29 +27,13 @@ module OAuth
       oauth_sessions.created_status.order(created_at: :desc).first
     end
 
-    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
-    def redeem(redirection_uri:, code_verifier: nil)
-      raise OAuth::InvalidGrantError if redeemed?
-
-      if oauth_client.public_client_type? || oauth_challenge.code_challenge.present?
-        oauth_challenge.validate_code_challenge(code_verifier:)
-      end
-
-      if oauth_client.public_client_type? || oauth_challenge.redirect_uri.present?
-        oauth_challenge.validate_redirect_uri(redirection_uri:)
-      end
-
-      if oauth_challenge.errors.any?
-        raise OAuth::UnsuccessfulChallengeError, oauth_challenge.errors.full_messages.join(', ')
-      end
-
-      create_oauth_session(authorization_grant: self) do
+    def redeem
+      create_oauth_session(grant: self) do
         update(redeemed: true)
       end
     rescue OAuth::ServerError => error
       raise OAuth::ServerError, error.message
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
 
     private
 
