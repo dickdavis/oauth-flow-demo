@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_10_230952) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_22_202054) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -58,12 +58,19 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_10_230952) do
     t.enum "status", default: "created", null: false, enum_type: "oauth_session_status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "authorization_grants_id"
     t.uuid "oauth_authorization_grant_id"
     t.index ["access_token_jti"], name: "index_oauth_sessions_on_access_token_jti", unique: true
-    t.index ["authorization_grants_id"], name: "index_oauth_sessions_on_authorization_grants_id"
     t.index ["oauth_authorization_grant_id"], name: "index_oauth_sessions_on_oauth_authorization_grant_id"
     t.index ["refresh_token_jti"], name: "index_oauth_sessions_on_refresh_token_jti", unique: true
+  end
+
+  create_table "oauth_token_exchange_grants", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.uuid "oauth_client_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_client_id"], name: "index_oauth_token_exchange_grants_on_oauth_client_id"
+    t.index ["user_id"], name: "index_oauth_token_exchange_grants_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -79,4 +86,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_10_230952) do
   add_foreign_key "oauth_authorization_grants", "oauth_clients"
   add_foreign_key "oauth_challenges", "oauth_authorization_grants"
   add_foreign_key "oauth_sessions", "oauth_authorization_grants"
+  add_foreign_key "oauth_token_exchange_grants", "oauth_clients"
+  add_foreign_key "oauth_token_exchange_grants", "users"
 end
