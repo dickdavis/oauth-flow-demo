@@ -109,7 +109,7 @@ RSpec.describe OAuth::SessionsController do
     end
 
     context 'when the params include a valid redirect_uri' do
-      let(:redirect_uri) { oauth_challenge.redirect_uri }
+      let(:redirect_uri) { oauth_client.redirect_uri }
 
       it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
         call_endpoint
@@ -136,44 +136,6 @@ RSpec.describe OAuth::SessionsController do
 
     context 'when the params include a redirect_uri' do
       let(:redirect_uri) { 'https://example.com' }
-
-      it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
-        call_endpoint
-        aggregate_failures do
-          expect(response).not_to have_http_status(:bad_request)
-          expect(response.parsed_body).not_to eq({ 'error' => 'invalid_request' })
-        end
-      end
-    end
-  end
-
-  shared_examples 'verifies the redirect URI' do
-    context 'when the params do not include a redirect_uri' do
-      let(:redirect_uri) { nil }
-
-      it 'responds with HTTP status bad request and error invalid_request as JSON' do
-        call_endpoint
-        aggregate_failures do
-          expect(response).to have_http_status(:bad_request)
-          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-        end
-      end
-    end
-
-    context 'when the params include an invalid redirect_uri' do
-      let(:redirect_uri) { 'https://invalid.com' }
-
-      it 'responds with HTTP status bad request and error invalid_request as JSON' do
-        call_endpoint
-        aggregate_failures do
-          expect(response).to have_http_status(:bad_request)
-          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-        end
-      end
-    end
-
-    context 'when the params include a valid redirect_uri' do
-      let(:redirect_uri) { oauth_challenge.redirect_uri }
 
       it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
         call_endpoint
@@ -265,7 +227,6 @@ RSpec.describe OAuth::SessionsController do
 
       let_it_be(:oauth_client) { create(:oauth_client, client_type: 'public') }
       let_it_be(:oauth_authorization_grant) { create(:oauth_authorization_grant, user:, oauth_client:) }
-      let_it_be(:oauth_challenge) { create(:oauth_challenge, oauth_authorization_grant:) }
 
       let(:client_id) { oauth_client.id }
       let(:code_verifier) { 'code_verifier' }
@@ -289,134 +250,81 @@ RSpec.describe OAuth::SessionsController do
 
       include_context 'with an authenticated client', :post, :oauth_create_session_path
 
+      it_behaves_like 'an endpoint that requires client authentication'
+      it_behaves_like 'requires a valid code param'
+
       context 'when client did not use additional security challenges for authorize request' do
-        let_it_be(:oauth_challenge) do
-          create(
-            :oauth_challenge,
-            oauth_authorization_grant:,
+        before_all do
+          oauth_authorization_grant.oauth_challenge.update!(
             code_challenge: nil,
             code_challenge_method: nil,
             redirect_uri: nil
           )
         end
 
-        it_behaves_like 'an endpoint that requires client authentication'
-        it_behaves_like 'requires a valid code param'
         it_behaves_like 'does not require a valid client_id param'
-        it_behaves_like 'does not require a valid redirect_uri param'
-        it_behaves_like 'generates an OAuth session'
         it_behaves_like 'does not require PKCE'
+        it_behaves_like 'generates an OAuth session'
       end
 
       context 'when client provided a redirect_uri in authorize request' do
-        let_it_be(:oauth_challenge) do
-          create(
-            :oauth_challenge,
-            oauth_authorization_grant:,
+        before do
+          oauth_authorization_grant.reload.oauth_challenge.update!(
             code_challenge: nil,
             code_challenge_method: nil,
-            redirect_uri: 'https://localhost:3000/'
+            redirect_uri: oauth_client.redirect_uri
           )
         end
 
-        let(:redirect_uri) { 'https://localhost:3000/' }
+        context 'when the params do not include a redirect_uri' do
+          it 'responds with HTTP status bad request and error invalid_request as JSON' do
+            call_endpoint
+            aggregate_failures do
+              expect(response).to have_http_status(:bad_request)
+              expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+            end
+          end
+        end
 
-        it_behaves_like 'an endpoint that requires client authentication'
-        it_behaves_like 'requires a valid code param'
-        it_behaves_like 'does not require a valid client_id param'
-        it_behaves_like 'requires a valid redirect_uri param'
-        it_behaves_like 'generates an OAuth session'
-        it_behaves_like 'does not require PKCE'
-        it_behaves_like 'verifies the redirect URI'
+        context 'when the params include an invalid redirect_uri' do
+          let(:redirect_uri) { 'https://invalid.com' }
+
+          it 'responds with HTTP status bad request and error invalid_request as JSON' do
+            call_endpoint
+            aggregate_failures do
+              expect(response).to have_http_status(:bad_request)
+              expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+            end
+          end
+        end
+
+        context 'when the params include a valid redirect_uri' do
+          let(:redirect_uri) { oauth_client.redirect_uri }
+
+          it_behaves_like 'generates an OAuth session'
+
+          it 'does not respond with HTTP status bad request and error invalid_request as JSON' do
+            call_endpoint
+            aggregate_failures do
+              expect(response).not_to have_http_status(:bad_request)
+              expect(response.parsed_body).not_to eq({ 'error' => 'invalid_request' })
+            end
+          end
+        end
       end
 
       context 'when client secured authorize request with PKCE' do
-        let_it_be(:oauth_challenge) do
-          create(
-            :oauth_challenge,
-            oauth_authorization_grant:,
+        before_all do
+          oauth_authorization_grant.oauth_challenge.update!(
             redirect_uri: nil
           )
         end
 
         let(:code_verifier) { 'code_verifier' }
 
-        it_behaves_like 'an endpoint that requires client authentication'
-        it_behaves_like 'requires a valid code param'
-        it_behaves_like 'generates an OAuth session'
         it_behaves_like 'implements PKCE'
+        it_behaves_like 'generates an OAuth session'
       end
-    end
-  end
-
-  shared_examples 'requires a valid refresh_token param' do
-    let(:refresh_token) { 'foobar' }
-
-    it 'responds with HTTP status bad request and error unsupported_grant_type as JSON' do
-      call_endpoint
-      aggregate_failures do
-        expect(response).to have_http_status(:bad_request)
-        expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-      end
-    end
-  end
-
-  shared_examples 'does not refresh a revoked session' do
-    let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'revoked') }
-
-    it 'responds with HTTP status bad request and error invalid_request as JSON' do
-      call_endpoint
-      aggregate_failures do
-        expect(response).to have_http_status(:bad_request)
-        expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-      end
-    end
-
-    it 'logs the refresh replay attack details' do # rubocop:disable RSpec/ExampleLength
-      logger_spy = instance_spy(ActiveSupport::Logger)
-      allow(Rails).to receive(:logger).and_return(logger_spy)
-      call_endpoint
-      expect(logger_spy)
-        .to have_received(:warn)
-        .with(
-          I18n.t(
-            'oauth.errors.revoked_session',
-            client_id: oauth_authorization_grant.oauth_client.id,
-            refreshed_session_id: oauth_session.id,
-            revoked_session_id: oauth_session.id,
-            user_id: user.id
-          )
-        )
-    end
-  end
-
-  shared_examples 'does not refresh an already refreshed session' do
-    let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'refreshed') }
-
-    it 'responds with HTTP status bad request and error invalid_request as JSON' do
-      call_endpoint
-      aggregate_failures do
-        expect(response).to have_http_status(:bad_request)
-        expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
-      end
-    end
-
-    it 'logs the refresh replay attack details' do # rubocop:disable RSpec/ExampleLength
-      active_oauth_session = create(:oauth_session, oauth_authorization_grant:)
-      logger_spy = instance_spy(ActiveSupport::Logger)
-      allow(Rails).to receive(:logger).and_return(logger_spy)
-      call_endpoint
-      expect(logger_spy)
-        .to have_received(:warn)
-        .with(
-          I18n.t(
-            'oauth.errors.revoked_session',
-            client_id: oauth_authorization_grant.oauth_client.id,
-            refreshed_session_id: oauth_session.id,
-            revoked_session_id: active_oauth_session.id,
-            user_id: user.id
-          )
-        )
     end
   end
 
@@ -427,6 +335,77 @@ RSpec.describe OAuth::SessionsController do
     let(:grant_type) { 'refresh_token' }
     let(:refresh_token) { JsonWebToken.encode(attributes_for(:oauth_refresh_token, oauth_session:)) }
     let!(:oauth_session) { create(:oauth_session, oauth_authorization_grant:) }
+
+    shared_examples 'requires a valid refresh_token param' do
+      let(:refresh_token) { 'foobar' }
+
+      it 'responds with HTTP status bad request and error unsupported_grant_type as JSON' do
+        call_endpoint
+        aggregate_failures do
+          expect(response).to have_http_status(:bad_request)
+          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+        end
+      end
+    end
+
+    shared_examples 'does not refresh a revoked session' do
+      let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'revoked') }
+
+      it 'responds with HTTP status bad request and error invalid_request as JSON' do
+        call_endpoint
+        aggregate_failures do
+          expect(response).to have_http_status(:bad_request)
+          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+        end
+      end
+
+      it 'logs the refresh replay attack details' do # rubocop:disable RSpec/ExampleLength
+        logger_spy = instance_spy(ActiveSupport::Logger)
+        allow(Rails).to receive(:logger).and_return(logger_spy)
+        call_endpoint
+        expect(logger_spy)
+          .to have_received(:warn)
+          .with(
+            I18n.t(
+              'oauth.errors.revoked_session',
+              client_id: oauth_authorization_grant.oauth_client.id,
+              refreshed_session_id: oauth_session.id,
+              revoked_session_id: oauth_session.id,
+              user_id: user.id
+            )
+          )
+      end
+    end
+
+    shared_examples 'does not refresh an already refreshed session' do
+      let(:oauth_session) { create(:oauth_session, oauth_authorization_grant:, status: 'refreshed') }
+
+      it 'responds with HTTP status bad request and error invalid_request as JSON' do
+        call_endpoint
+        aggregate_failures do
+          expect(response).to have_http_status(:bad_request)
+          expect(response.parsed_body).to eq({ 'error' => 'invalid_request' })
+        end
+      end
+
+      it 'logs the refresh replay attack details' do # rubocop:disable RSpec/ExampleLength
+        active_oauth_session = create(:oauth_session, oauth_authorization_grant:)
+        logger_spy = instance_spy(ActiveSupport::Logger)
+        allow(Rails).to receive(:logger).and_return(logger_spy)
+        call_endpoint
+        expect(logger_spy)
+          .to have_received(:warn)
+          .with(
+            I18n.t(
+              'oauth.errors.revoked_session',
+              client_id: oauth_authorization_grant.oauth_client.id,
+              refreshed_session_id: oauth_session.id,
+              revoked_session_id: active_oauth_session.id,
+              user_id: user.id
+            )
+          )
+      end
+    end
 
     context 'when the oauth client type is public' do
       subject(:call_endpoint) { post oauth_refresh_session_path, params: }

@@ -70,6 +70,7 @@ en:
   activemodel:
     models:
       oauth/access_token: 'Access token'
+      oauth/access_token_request: 'Access token request'
       oauth/authorization_request: 'Authorization request'
       oauth/refresh_token: 'Refresh token'
     attributes:
@@ -80,6 +81,10 @@ en:
         iss: 'Issuer (iss)'
         jti: 'JTI (jti)'
         user_id: 'User ID'
+      oauth/access_token_request:
+        code_verifier: 'Code verifier'
+        oauth_authorization_grant: 'OAuth authorization grant'
+        redirect_uri: 'Redirect URI'
       oauth/authorization_request:
         client_id: 'Client ID'
         code_challenge: 'Code challenge'
@@ -111,26 +116,39 @@ en:
               blank: 'claim not present in token'
             user_id:
               blank: 'claim not present in token'
+        oauth/access_token_request:
+          attributes:
+            code_verifier:
+              blank: 'must be provided as a param in the access token request'
+              does_not_validate_code_challenge: 'does not vaidate code_challenge from the authorize request'
+              present_in_authorize: 'must be provided if sent in the original authorization request'
+            oauth_authorization_grant:
+              invalid: 'must be initialized with an authorization grant'
+            redirect_uri:
+              blank: 'must be provided as a param in the access token request'
+              mismatched: 'does not match the redirect_uri from the authorize request'
+              present_in_authorize: 'must be provided if sent in the original authorization request'
         oauth/authorization_request:
-          client_id:
-            blank: 'must be provided as a param in the request to authorize when client is public'
-            unregistered_client: 'does not map to a registered client'
-          code_challenge:
-            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
-            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
-          code_challenge_method:
-            invalid: 'must be a supported code challenge method'
-            required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
-            required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
-          oauth_client:
-            invalid: 'must be initiated by a client'
-          redirect_uri:
-            blank: 'must be provided as a param in the request to authorize when client is public'
-            invalid: 'must match redirect_uri configured for client'
-          response_type:
-            blank: 'must be provided as a param in the request to authorize'
-            invalid: 'must be a supported response type'
-          state:
+          attributes:
+            client_id:
+              blank: 'must be provided as a param in the request to authorize when client is public'
+              unregistered_client: 'does not map to a registered client'
+            code_challenge:
+              required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+              required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+            code_challenge_method:
+              invalid: 'must be a supported code challenge method'
+              required_if_other_pkce_params_present: 'must be provided as a param in the request to authorize if other PKCE params were sent'
+              required_for_public_clients: 'must be provided as a param in the request to authorize when client is public'
+            oauth_client:
+              invalid: 'must be initiated by a client'
+            redirect_uri:
+              blank: 'must be provided as a param in the request to authorize when client is public'
+              invalid: 'must match redirect_uri configured for client'
+            response_type:
+              blank: 'must be provided as a param in the request to authorize'
+              invalid: 'must be a supported response type'
+            state:
         oauth/refresh_token:
           attributes:
             aud:

@@ -17,16 +17,22 @@ module OAuth
       render_token_request_error(error: 'server_error', status: :internal_server_error)
     end
 
+    # rubocop:disable Metrics/MethodLength
     def token
-      access_token, refresh_token, expiration = @authorization_grant.redeem(
-        redirection_uri: params[:redirect_uri],
-        code_verifier: params[:code_verifier]
-      ).deconstruct
+      access_token_request = OAuth::AccessTokenRequest.new(
+        oauth_authorization_grant: @authorization_grant,
+        code_verifier: params[:code_verifier],
+        redirect_uri: params[:redirect_uri]
+      )
 
-      render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
-    rescue OAuth::UnsuccessfulChallengeError
-      render_token_request_error(error: 'invalid_request')
+      if access_token_request.valid?
+        access_token, refresh_token, expiration = @authorization_grant.redeem.deconstruct
+        render json: { access_token:, refresh_token:, token_type: 'bearer', expires_in: expiration }
+      else
+        render_token_request_error(error: 'invalid_request')
+      end
     end
+    # rubocop:enable Metrics/MethodLength
 
     # rubocop:disable Metrics/AbcSize
     def refresh
