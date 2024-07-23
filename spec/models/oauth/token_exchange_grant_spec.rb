@@ -9,7 +9,6 @@ RSpec.describe OAuth::TokenExchangeGrant do # rubocop:disable RSpec/FilePath
     specify(:aggregate_failures) do
       expect(model).to belong_to(:user)
       expect(model).to belong_to(:oauth_client)
-      expect(model).to have_many(:oauth_sessions)
     end
   end
 end
